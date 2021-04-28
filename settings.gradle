@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "geekbrains-kotlin-with-android"
