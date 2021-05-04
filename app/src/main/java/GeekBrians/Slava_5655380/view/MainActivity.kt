@@ -1,8 +1,8 @@
-package GeekBrians.Slava_5655380
+package GeekBrians.Slava_5655380.view
 
+import GeekBrians.Slava_5655380.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import GeekBrians.Slava_5655380.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
 

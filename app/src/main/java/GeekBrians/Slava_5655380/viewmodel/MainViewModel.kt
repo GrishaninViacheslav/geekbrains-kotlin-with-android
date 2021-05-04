@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.ui.main
+package GeekBrians.Slava_5655380.viewmodel
 
 import androidx.lifecycle.ViewModel
 
