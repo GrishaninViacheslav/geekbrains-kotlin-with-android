@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.view
 
 import GeekBrians.Slava_5655380.R
+import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.viewmodel.Adapter
 import GeekBrians.Slava_5655380.viewmodel.MainViewModel
 import android.os.Bundle
@@ -21,6 +22,9 @@ class MainFragment : Fragment() {
 
     private lateinit var viewModel: MainViewModel
 
+    private var _binding: MainFragmentBinding? = null
+    private val binding get() = _binding!!
+
     private fun initRecyclerView(recyclerView: RecyclerView, data: Array<String>) {
         recyclerView.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(context)
@@ -33,8 +37,9 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val view: View = inflater.inflate(R.layout.main_fragment, container, false)
-        val recyclerView: RecyclerView = view.findViewById(R.id.recycler_view_lines)
+        _binding = MainFragmentBinding.inflate(inflater, container, false)
+        val view = binding.root
+        val recyclerView: RecyclerView = binding.recyclerViewLines
         val data = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelfth", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one", "twenty-two")
         initRecyclerView(recyclerView, data)
         return view
