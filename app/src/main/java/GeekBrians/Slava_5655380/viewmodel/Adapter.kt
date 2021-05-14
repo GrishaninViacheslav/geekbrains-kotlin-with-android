@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 
-class Adapter(private val dataSource: Array<String>) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+class Adapter(private val viewModel: MainViewModel) : RecyclerView.Adapter<Adapter.ViewHolder>() {
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
         val v = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.item, viewGroup, false)
@@ -16,11 +16,11 @@ class Adapter(private val dataSource: Array<String>) : RecyclerView.Adapter<Adap
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        viewHolder.view.findViewById<TextView>(R.id.textView).text = dataSource[i]
+        viewHolder.view.findViewById<TextView>(R.id.textView).text = viewModel.getItem(i)
     }
 
     override fun getItemCount(): Int {
-        return dataSource.size
+        return viewModel.getItemCount()
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
