@@ -3,12 +3,14 @@ package GeekBrians.Slava_5655380.view
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.viewmodel.MainViewModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainFragment : Fragment() {
 
@@ -28,8 +30,28 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
 
         binding.recyclerViewLines.setHasFixedSize(true)
-        binding.recyclerViewLines.layoutManager = LinearLayoutManager(context)
+        val layoutManager = LinearLayoutManager(context)
+        binding.recyclerViewLines.layoutManager = layoutManager
+        binding.recyclerViewLines.itemAnimator = null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
         binding.recyclerViewLines.adapter = viewModel.adapter
+
+        viewModel.fetchData(true)
+
+
+//        binding.bottomMenu.setOnClickListener(View.OnClickListener {
+//            Log.d("[FetchState]", "viewModel.fetchData(true)")
+//            viewModel.fetchData(true)
+//        })
+
+        binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                Log.d("[FetchState]", "onScrolled")
+                if (layoutManager.findLastVisibleItemPosition() == viewModel.getItemCount() - 1) {
+                    Log.d("[FetchState]", "viewModel.fetchData(true)")
+                    viewModel.fetchData(true)
+                }
+            }
+        })
     }
 
     override fun onCreateView(

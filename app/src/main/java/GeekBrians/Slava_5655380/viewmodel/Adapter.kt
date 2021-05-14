@@ -16,7 +16,7 @@ class Adapter(private val viewModel: MainViewModel) : RecyclerView.Adapter<Adapt
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        viewHolder.view.findViewById<TextView>(R.id.textView).text = viewModel.getItem(i)
+        viewHolder.view.findViewById<TextView>(R.id.textView).text = viewModel.getItem(i).localizedTitle
     }
 
     override fun getItemCount(): Int {
