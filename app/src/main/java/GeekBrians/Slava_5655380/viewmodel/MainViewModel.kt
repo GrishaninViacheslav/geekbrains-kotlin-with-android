@@ -83,8 +83,9 @@ class MainViewModel(
     }
 
     override fun notifyOfThreadComplete(thread: Thread?) {
-        // TODO: исправить баг приводящий к ошибке: java.lang.IllegalStateException: Cannot call this method while RecyclerView is computing a layout or scrolling androidx.recyclerview.widget.RecyclerView
-        adapter.notifyItemRangeInserted(rangeInsertStart!!, rangeInsertCount!!)
+        // Если не прибавлять число к rangeInsertCount,
+        // то почему-то последний item RecyclerView будет дублировать item который был последнем при первом fetchData
+        adapter.notifyItemRangeInserted(rangeInsertStart!!, rangeInsertCount!! + 1)
         setSuccessState()
     }
 

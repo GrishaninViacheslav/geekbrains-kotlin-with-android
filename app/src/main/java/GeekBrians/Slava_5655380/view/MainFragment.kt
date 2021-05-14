@@ -32,7 +32,8 @@ class MainFragment : Fragment() {
         binding.recyclerViewLines.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(context)
         binding.recyclerViewLines.layoutManager = layoutManager
-        binding.recyclerViewLines.itemAnimator = null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
+        binding.recyclerViewLines.itemAnimator =
+            null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
         binding.recyclerViewLines.adapter = viewModel.adapter
 
         viewModel.fetchData(true)
@@ -43,11 +44,16 @@ class MainFragment : Fragment() {
 //            viewModel.fetchData(true)
 //        })
 
+        var prevLastVisibleItemPosition = -1
+
         binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                Log.d("[FetchState]", "onScrolled")
-                if (layoutManager.findLastVisibleItemPosition() == viewModel.getItemCount() - 1) {
-                    Log.d("[FetchState]", "viewModel.fetchData(true)")
+                Log.d("[onScrolled]", "onScrolled")
+                val currLastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
+                if (currLastVisibleItemPosition == viewModel.getItemCount() - 1
+                    && currLastVisibleItemPosition != prevLastVisibleItemPosition) {
+                    Log.d("[layoutManager]", "viewModel.fetchData(true)")
+                    prevLastVisibleItemPosition = currLastVisibleItemPosition
                     viewModel.fetchData(true)
                 }
             }
