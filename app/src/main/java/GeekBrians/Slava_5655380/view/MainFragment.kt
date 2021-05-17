@@ -3,7 +3,6 @@ package GeekBrians.Slava_5655380.view
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.viewmodel.MainViewModel
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,23 +37,24 @@ class MainFragment : Fragment() {
 
         viewModel.fetchData(true)
 
-
-//        binding.bottomMenu.setOnClickListener(View.OnClickListener {
-//            Log.d("[FetchState]", "viewModel.fetchData(true)")
-//            viewModel.fetchData(true)
-//        })
-
-        var prevLastVisibleItemPosition = -1
+        var isInitialScrollStateChanged: Boolean = false
 
         binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                Log.d("[onScrolled]", "onScrolled")
-                val currLastVisibleItemPosition = layoutManager.findLastVisibleItemPosition()
-                if (currLastVisibleItemPosition == viewModel.getItemCount() - 1
-                    && currLastVisibleItemPosition != prevLastVisibleItemPosition) {
-                    Log.d("[layoutManager]", "viewModel.fetchData(true)")
-                    prevLastVisibleItemPosition = currLastVisibleItemPosition
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                isInitialScrollStateChanged = true
+                if (!recyclerView.canScrollVertically(1)) {
                     viewModel.fetchData(true)
+                }
+
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if(!isInitialScrollStateChanged){
+                    if (!recyclerView.canScrollVertically(1)) {
+                        viewModel.fetchData(true)
+                    }
                 }
             }
         })
@@ -72,5 +72,6 @@ class MainFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         // TODO: Use the ViewModel
     }
+
 
 }
