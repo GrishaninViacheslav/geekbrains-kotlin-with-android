@@ -29,7 +29,7 @@ class Adapter(private val viewModel: MainViewModel) : RecyclerView.Adapter<Adapt
                 viewHolder.view.findViewById<TextView>(R.id.localized_title).visibility = VISIBLE
                 viewHolder.view.findViewById<ProgressBar>(R.id.progress_bar).visibility = GONE
 
-                viewHolder.view.findViewById<TextView>(R.id.localized_title).text = rvItemState.movieMetadata.localizedTitle
+                viewHolder.view.findViewById<TextView>(R.id.localized_title).text = rvItemState.movieMetadata.index.toString()
             }
             is RVItemState.Loading -> {
                 viewHolder.view.findViewById<Space>(R.id.background_video).visibility = GONE

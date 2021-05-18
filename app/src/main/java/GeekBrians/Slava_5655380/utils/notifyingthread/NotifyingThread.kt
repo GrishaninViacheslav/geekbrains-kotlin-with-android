@@ -1,8 +1,9 @@
 package GeekBrians.Slava_5655380.utils.notifyingthread
 
+import android.os.Bundle
 import java.util.concurrent.CopyOnWriteArraySet
 
-abstract class NotifyingThread : Thread() {
+abstract class NotifyingThread(val CLASS_CODE: String, val bundle: Bundle) : Thread() {
     private val listeners: MutableSet<ThreadCompleteListener> =
         CopyOnWriteArraySet<ThreadCompleteListener>()
 

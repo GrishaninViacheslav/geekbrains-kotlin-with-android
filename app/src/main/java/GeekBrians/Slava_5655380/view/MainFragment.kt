@@ -35,16 +35,18 @@ class MainFragment : Fragment() {
             null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
         binding.recyclerViewLines.adapter = viewModel.adapter
 
-        viewModel.fetchData(true)
+        viewModel.feed(true)
 
         var isInitialScrollStateChanged: Boolean = false
-
         binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 isInitialScrollStateChanged = true
                 if (!recyclerView.canScrollVertically(1)) {
-                    viewModel.fetchData(true)
+                    viewModel.feed(true)
+                }
+                if(!recyclerView.canScrollVertically(-1)){
+                    viewModel.feed(false)
                 }
 
             }
@@ -53,7 +55,7 @@ class MainFragment : Fragment() {
                 super.onScrolled(recyclerView, dx, dy)
                 if(!isInitialScrollStateChanged){
                     if (!recyclerView.canScrollVertically(1)) {
-                        viewModel.fetchData(true)
+                        viewModel.feed(true)
                     }
                 }
             }
