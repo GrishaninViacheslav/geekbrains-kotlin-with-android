@@ -1,7 +1,6 @@
-package GeekBrians.Slava_5655380.viewmodel
+package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
 
 import GeekBrians.Slava_5655380.R
-import GeekBrians.Slava_5655380.model.RVItemState
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,7 +13,7 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 
-class Adapter(private val viewModel: MainViewModel) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView.Adapter<Adapter.ViewHolder>() {
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
         val v = LayoutInflater.from(viewGroup.context)
             .inflate(R.layout.item, viewGroup, false)

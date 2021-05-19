@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.model
+package GeekBrians.Slava_5655380.domain
 
 data class MovieMetadata(
     val index: Int,

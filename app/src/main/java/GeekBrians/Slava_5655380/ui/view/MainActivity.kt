@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.view
+package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.R
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +11,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
+                    .replace(R.id.container, RecommendationFeedFragment.newInstance())
                     .commitNow()
         }
     }

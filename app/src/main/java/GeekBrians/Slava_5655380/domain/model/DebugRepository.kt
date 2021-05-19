@@ -1,4 +1,6 @@
-package GeekBrians.Slava_5655380.model
+package GeekBrians.Slava_5655380.domain.model
+
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 
 class DebugRepository : Repository {
     private val data = arrayOf(

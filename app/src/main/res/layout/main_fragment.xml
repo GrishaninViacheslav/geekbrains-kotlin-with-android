@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/purple_700"
     android:orientation="vertical"
-    tools:context=".view.MainFragment">
+    tools:context=".ui.view.RecommendationFeedFragment">
 
     <Space
         android:layout_width="match_parent"

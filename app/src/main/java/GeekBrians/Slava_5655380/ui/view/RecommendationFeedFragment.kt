@@ -1,7 +1,7 @@
-package GeekBrians.Slava_5655380.view
+package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
-import GeekBrians.Slava_5655380.viewmodel.MainViewModel
+import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecommendationFeedViewModel
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,13 +11,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class MainFragment : Fragment() {
+class RecommendationFeedFragment : Fragment() {
 
     companion object {
-        fun newInstance() = MainFragment()
+        fun newInstance() = RecommendationFeedFragment()
     }
 
-    private lateinit var viewModel: MainViewModel
+    private lateinit var viewModel: RecommendationFeedViewModel
 
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
@@ -26,7 +26,7 @@ class MainFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?
     ) {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(RecommendationFeedViewModel::class.java)
 
         binding.recyclerViewLines.setHasFixedSize(true)
         val layoutManager = LinearLayoutManager(context)

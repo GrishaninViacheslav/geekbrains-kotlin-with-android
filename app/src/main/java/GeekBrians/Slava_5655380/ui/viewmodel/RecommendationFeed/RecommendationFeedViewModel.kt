@@ -1,9 +1,8 @@
-package GeekBrians.Slava_5655380.viewmodel
+package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
 
-import GeekBrians.Slava_5655380.model.DebugRepository
-import GeekBrians.Slava_5655380.model.MovieMetadata
-import GeekBrians.Slava_5655380.model.RVItemState
-import GeekBrians.Slava_5655380.model.Repository
+import GeekBrians.Slava_5655380.domain.model.DebugRepository
+import GeekBrians.Slava_5655380.domain.MovieMetadata
+import GeekBrians.Slava_5655380.domain.model.Repository
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.ViewModel
@@ -15,8 +14,9 @@ import kotlin.collections.ArrayList
 //             предоставлющую готовую к взаимодействиям ленту и возможностью задать
 //             начальную позицию ленты
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
-//              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0)
-class MainViewModel(
+//              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
+//              от feedBufferMaxSize отнимается numberOfBufferingItems)
+class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
@@ -82,6 +82,7 @@ class MainViewModel(
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
+        // TODO: вынести feedBuffer.subList и uiThreadHandler.post
         if (cropBottom) {
             var itemsToCrop = feedBuffer.size - feedBufferMaxSize
             if (feedBuffer[0] is RVItemState.Loading) {
