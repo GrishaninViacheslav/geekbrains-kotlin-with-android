@@ -45,7 +45,7 @@ class MainFragment : Fragment() {
                 if (!recyclerView.canScrollVertically(1)) {
                     viewModel.feed(true)
                 }
-                if(!recyclerView.canScrollVertically(-1)){
+                if (!recyclerView.canScrollVertically(-1)) {
                     viewModel.feed(false)
                 }
 
@@ -53,7 +53,7 @@ class MainFragment : Fragment() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if(!isInitialScrollStateChanged){
+                if (!isInitialScrollStateChanged) {
                     if (!recyclerView.canScrollVertically(1)) {
                         viewModel.feed(true)
                     }
@@ -69,11 +69,4 @@ class MainFragment : Fragment() {
         setupBindings(inflater, container)
         return binding.root
     }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        // TODO: Use the ViewModel
-    }
-
-
 }
