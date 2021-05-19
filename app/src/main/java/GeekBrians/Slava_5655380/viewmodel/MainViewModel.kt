@@ -6,7 +6,6 @@ import GeekBrians.Slava_5655380.model.RVItemState
 import GeekBrians.Slava_5655380.model.Repository
 import GeekBrians.Slava_5655380.utils.notifyingthread.NotifyingThread
 import GeekBrians.Slava_5655380.utils.notifyingthread.ThreadCompleteListener
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -21,7 +20,7 @@ class MainViewModel(
     private val numberOfBufferingItems: Int = 2, // TODO: значение должно быть больше 1
     // TODO: исправить баг из за которого первое заполнение экрана
     //       лентой работает только при numberOfBufferingItems = 2
-    private val feedBufferMaxSize: Int = 5
+    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems
 ) : ViewModel(), ThreadCompleteListener {
     var adapter: Adapter = Adapter(this)
 
@@ -64,28 +63,54 @@ class MainViewModel(
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
         if (cropBottom) {
-            val itemsToCrop = feedBuffer.size - feedBufferMaxSize
-            feedBuffer.subList(0, itemsToCrop).clear()
-            ThreadUtil.runOnUiThread {
-                adapter.notifyItemRangeRemoved(
-                    0,
-                    itemsToCrop
-                )
+            var itemsToCrop = feedBuffer.size - feedBufferMaxSize
+            if(feedBuffer[0] is RVItemState.Loading){
+                itemsToCrop -= 1
+                feedBuffer.subList(1, itemsToCrop + 1).clear()
+                ThreadUtil.runOnUiThread {
+                    adapter.notifyItemRangeRemoved(
+                        1,
+                        itemsToCrop
+                    )
+                    Log.d("[MYLOG]", "cropFeedBuffer 1: 1, $itemsToCrop")
+                }
+            }
+            else{
+                feedBuffer.subList(0, itemsToCrop).clear()
+                ThreadUtil.runOnUiThread {
+                    adapter.notifyItemRangeRemoved(
+                        0,
+                        itemsToCrop
+                    )
+                    Log.d("[MYLOG]", "cropFeedBuffer 2: 0, $itemsToCrop")
+                }
             }
         } else {
-            val itemsToCrop = feedBuffer.size - feedBufferMaxSize
-            val cropStartPosition = feedBuffer.size - itemsToCrop
-            feedBuffer.subList(feedBuffer.size - itemsToCrop, feedBuffer.size).clear()
-            ThreadUtil.runOnUiThread {
-                adapter.notifyItemRangeRemoved(
-                    cropStartPosition,
-                    itemsToCrop
-                )
+            var itemsToCrop = feedBuffer.size - feedBufferMaxSize
+            var cropStartPosition = feedBuffer.size - itemsToCrop
+            if(feedBuffer[feedBuffer.size - 1] is RVItemState.Loading){
+                feedBuffer.subList(cropStartPosition, feedBuffer.size - 1).clear()
+                ThreadUtil.runOnUiThread {
+                    adapter.notifyItemRangeRemoved(
+                        cropStartPosition,
+                        itemsToCrop - 1
+                    )
+                    Log.d("[MYLOG]", "cropFeedBuffer 3: $cropStartPosition, ${itemsToCrop - 1}")
+                }
+            }
+            else{
+                feedBuffer.subList(feedBuffer.size - itemsToCrop, feedBuffer.size).clear()
+                ThreadUtil.runOnUiThread {
+                    adapter.notifyItemRangeRemoved(
+                        cropStartPosition,
+                        itemsToCrop
+                    )
+                    Log.d("[MY LOG]", "cropFeedBuffer 4: $cropStartPosition, $itemsToCrop")
+                }
             }
         }
     }
 
-    @Synchronized
     private fun synchronizedFetchData(fetchBottom: Boolean){
         fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
             return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
@@ -100,6 +125,11 @@ class MainViewModel(
                 lastEndItemIndex + numberOfBufferingItems - 1
             )
             setSuccessState(fetchBottom)
+            Log.d("[MYLOG]", "bottom fetchedData[")
+            for(el in fetchedData){
+                Log.d("[MYLOG]", "${el.index}")
+            }
+            Log.d("[MYLOG]", "]")
             feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
             rangeInsertCount = fetchedData.size + 1
         } else {
@@ -110,7 +140,7 @@ class MainViewModel(
                 firstItemIndex - 1
             )
             setSuccessState(fetchBottom)
-            Log.d("[MYLOG]", "fetchedData[")
+            Log.d("[MYLOG]", "top fetchedData[")
             for(el in fetchedData){
                 Log.d("[MYLOG]", "${el.index}")
             }
@@ -138,6 +168,17 @@ class MainViewModel(
                 rangeInsertCount!!
             )
         }
+        if(feedBuffer.size > feedBufferMaxSize){
+            cropFeedBuffer(fetchBottom)
+        }
+        Log.d("[MYLOG]", "cropped feedBuffer[")
+        for(el in feedBuffer){
+            when(el){
+                is RVItemState.Success ->  Log.d("[MYLOG]", "${el.movieMetadata.index}")
+                is RVItemState.Loading -> Log.d("[MYLOG]", "Loading")
+            }
+        }
+        Log.d("[MYLOG]", "]")
         if (fetchBottom) {
             bottomIsFetching = false
         } else {
@@ -152,20 +193,8 @@ class MainViewModel(
         // TODO: реализовать возможность задать начальную позицию ленты,
         //       сейчас норамально работает только начальная позиция равная 0
         setLoadingState(fetchBottom)
-
-        // TODO: не запускать поток до тех пор пока не завершиться запущенный ранее
-        try {
-            val bundle: Bundle = Bundle()
-            bundle.putBoolean(FETCH_BOTTOM_VALUE_KEY, fetchBottom)
-            val thread = object : NotifyingThread(FETCHING_THREAD_CLASS_CODE, bundle) {
-                override fun doRun() {
-                    synchronizedFetchData(fetchBottom)
-                }
-            }
-            thread.addListener(this)
-            thread.start()
-        } catch (e: Exception) {
-            setErrorState(e)
+        fetchingExecutorService.execute{
+            synchronizedFetchData(fetchBottom)
         }
     }
 
@@ -187,7 +216,7 @@ class MainViewModel(
         if (fetchedByIndexIncrease && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
             feedBuffer.removeAt(feedBuffer.size - 1)
             ThreadUtil.runOnUiThread {
-                adapter.notifyItemRemoved(feedBuffer.size) // TODO: разобраться почему нужно передать eedBuffer.size, а не feedBuffer.size - 1
+                adapter.notifyItemRemoved(feedBuffer.size)
             }
             // TODO: notify вынести в runOnUiThread
         } else if (!fetchedByIndexIncrease && feedBuffer[0] !is RVItemState.Success) {
