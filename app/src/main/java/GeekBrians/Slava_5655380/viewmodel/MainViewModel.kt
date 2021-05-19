@@ -29,51 +29,48 @@ class MainViewModel(
     private var topIsFetching: Boolean = false
 
     private fun fetchData(fetchBottom: Boolean) {
-        setLoadingState(fetchBottom)
-        fetchingExecutorService.execute {
-            synchronizedFetchData(fetchBottom)
-        }
-    }
+        fun fetchItemsToFeedBuffer(){
+            fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
+                return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
+            }
+            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int){
+                var rangeInsertStart: Int = prevFeedBufferSize - 1
+                var rangeInsertCount: Int = fetchedDataSize + 1
+                if(!fetchBottom){
+                    rangeInsertStart = 0
+                    rangeInsertCount = fetchedDataSize
+                }
+                uiThreadHandler.post {
+                    adapter.notifyItemRangeInserted(
+                        rangeInsertStart,
+                        rangeInsertCount
+                    )
+                }
+            }
 
-    private fun synchronizedFetchData(fetchBottom: Boolean) {
-        fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
-            return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
-        }
-        var rangeInsertStart: Int = 0
-        var rangeInsertCount: Int = 0
-        Thread.sleep(1000)
-        if (fetchBottom) {
-            rangeInsertStart = feedBuffer.size - 1
-            val lastEndItemIndex =
+            var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
-            val fetchedData = repository.getRange(
-                lastEndItemIndex,
-                lastEndItemIndex + numberOfBufferingItems - 1
-            )
-            setSuccessState(fetchBottom)
-            feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
-            rangeInsertCount = fetchedData.size + 1
-        } else {
-            val firstItemIndex =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
-            val fetchedData = repository.getRange(
-                firstItemIndex - numberOfBufferingItems,
-                firstItemIndex - 1
-            )
+            var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
+            var insertIndex: Int = feedBuffer.size - 1
+            val prevFeedBufferSize = feedBuffer.size
+            if (!fetchBottom) {
+                val firstItemIndex =
+                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
+                fetchFromIndex = firstItemIndex - numberOfBufferingItems
+                fetchToIndex = firstItemIndex - 1
+                insertIndex = 0
+            }
+            val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
             setSuccessState(fetchBottom)
             feedBuffer.addAll(
-                0,
+                insertIndex,
                 toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
             )
-            rangeInsertStart = 0
-            rangeInsertCount = fetchedData.size
+            adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
         }
-        uiThreadHandler.post {
-            adapter.notifyItemRangeInserted(
-                rangeInsertStart,
-                rangeInsertCount
-            )
-        }
+
+        Thread.sleep(1000)
+        fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
             cropFeedBuffer(fetchBottom)
         }
@@ -167,7 +164,10 @@ class MainViewModel(
         } else {
             topIsFetching = true
         }
-        fetchData(feedBottom)
+        setLoadingState(feedBottom)
+        fetchingExecutorService.execute {
+            fetchData(feedBottom)
+        }
     }
 
     fun getItemCount(): Int {
