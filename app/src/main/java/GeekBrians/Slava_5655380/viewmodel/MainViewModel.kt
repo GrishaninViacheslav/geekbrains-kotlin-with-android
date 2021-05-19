@@ -17,39 +17,71 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0)
 class MainViewModel(
-    private var feedInitialPosition: Int = 0,
+    private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
-    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems
+    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems,
+    private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
+    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
 ) : ViewModel() {
-    var adapter: Adapter = Adapter(this)
-    var feedBuffer: ArrayList<RVItemState> = arrayListOf()
-    private val uiThreadHandler = Handler(Looper.getMainLooper())
+    private val fetchingExecutorService: ExecutorService = Executors.newSingleThreadExecutor()
+    private var bottomIsFetching: Boolean = false
+    private var topIsFetching: Boolean = false
 
-    fun getItemCount(): Int {
-        return feedBuffer.size
-    }
-
-    fun getItem(index: Int): RVItemState {
-        return feedBuffer[index]
-    }
-
-    var rangeInsertStart: Int? = null
-    var rangeInsertCount: Int? = null
-
-    var bottomIsFetching: Boolean = false
-    var topIsFetching: Boolean = false
-
-    fun feed(feedBottom: Boolean) {
-        if (feedBottom && bottomIsFetching || !feedBottom && topIsFetching) {
-            return
+    private fun fetchData(fetchBottom: Boolean) {
+        setLoadingState(fetchBottom)
+        fetchingExecutorService.execute {
+            synchronizedFetchData(fetchBottom)
         }
-        if (feedBottom) {
-            bottomIsFetching = true
+    }
+
+    private fun synchronizedFetchData(fetchBottom: Boolean) {
+        fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
+            return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
+        }
+        var rangeInsertStart: Int = 0
+        var rangeInsertCount: Int = 0
+        Thread.sleep(1000)
+        if (fetchBottom) {
+            rangeInsertStart = feedBuffer.size - 1
+            val lastEndItemIndex =
+                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
+            val fetchedData = repository.getRange(
+                lastEndItemIndex,
+                lastEndItemIndex + numberOfBufferingItems - 1
+            )
+            setSuccessState(fetchBottom)
+            feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
+            rangeInsertCount = fetchedData.size + 1
         } else {
-            topIsFetching = true
+            val firstItemIndex =
+                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
+            val fetchedData = repository.getRange(
+                firstItemIndex - numberOfBufferingItems,
+                firstItemIndex - 1
+            )
+            setSuccessState(fetchBottom)
+            feedBuffer.addAll(
+                0,
+                toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
+            )
+            rangeInsertStart = 0
+            rangeInsertCount = fetchedData.size
         }
-        fetchData(feedBottom)
+        uiThreadHandler.post {
+            adapter.notifyItemRangeInserted(
+                rangeInsertStart,
+                rangeInsertCount
+            )
+        }
+        if (feedBuffer.size > feedBufferMaxSize) {
+            cropFeedBuffer(fetchBottom)
+        }
+        if (fetchBottom) {
+            bottomIsFetching = false
+        } else {
+            topIsFetching = false
+        }
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
@@ -96,62 +128,7 @@ class MainViewModel(
         }
     }
 
-    private fun synchronizedFetchData(fetchBottom: Boolean) {
-        fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
-            return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
-        }
-        Thread.sleep(1000)
-        if (fetchBottom) {
-            rangeInsertStart = feedBuffer.size - 1
-            val lastEndItemIndex =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
-            val fetchedData = repository.getRange(
-                lastEndItemIndex,
-                lastEndItemIndex + numberOfBufferingItems - 1
-            )
-            setSuccessState(fetchBottom)
-            feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
-            rangeInsertCount = fetchedData.size + 1
-        } else {
-            val firstItemIndex =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
-            val fetchedData = repository.getRange(
-                firstItemIndex - numberOfBufferingItems,
-                firstItemIndex - 1
-            )
-            setSuccessState(fetchBottom)
-            feedBuffer.addAll(
-                0,
-                toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
-            )
-            rangeInsertStart = 0
-            rangeInsertCount = fetchedData.size
-        }
-        uiThreadHandler.post {
-            adapter.notifyItemRangeInserted(
-                rangeInsertStart!!,
-                rangeInsertCount!!
-            )
-        }
-        if (feedBuffer.size > feedBufferMaxSize) {
-            cropFeedBuffer(fetchBottom)
-        }
-        if (fetchBottom) {
-            bottomIsFetching = false
-        } else {
-            topIsFetching = false
-        }
-    }
-
-    private val fetchingExecutorService: ExecutorService = Executors.newSingleThreadExecutor()
-    private fun fetchData(fetchBottom: Boolean) {
-        setLoadingState(fetchBottom)
-        fetchingExecutorService.execute {
-            synchronizedFetchData(fetchBottom)
-        }
-    }
-
-    fun setLoadingState(fetchedByIndexIncrease: Boolean) {
+    private fun setLoadingState(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[feedBuffer.size - 1] !is RVItemState.Loading)) {
             feedBuffer.add(RVItemState.Loading)
             uiThreadHandler.post {
@@ -165,7 +142,7 @@ class MainViewModel(
         }
     }
 
-    fun setSuccessState(fetchedByIndexIncrease: Boolean) {
+    private fun setSuccessState(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
             feedBuffer.removeAt(feedBuffer.size - 1)
             uiThreadHandler.post {
@@ -177,5 +154,27 @@ class MainViewModel(
                 adapter.notifyItemRemoved(0)
             }
         }
+    }
+
+    var adapter: Adapter = Adapter(this)
+
+    fun feed(feedBottom: Boolean) {
+        if (feedBottom && bottomIsFetching || !feedBottom && topIsFetching) {
+            return
+        }
+        if (feedBottom) {
+            bottomIsFetching = true
+        } else {
+            topIsFetching = true
+        }
+        fetchData(feedBottom)
+    }
+
+    fun getItemCount(): Int {
+        return feedBuffer.size
+    }
+
+    fun getItem(index: Int): RVItemState {
+        return feedBuffer[index]
     }
 }
