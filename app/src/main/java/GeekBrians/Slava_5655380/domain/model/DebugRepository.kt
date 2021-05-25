@@ -79,8 +79,11 @@ class DebugRepository : Repository {
         MovieMetadata(17, "17 movie", "17 movie original title", "Lorem ipsum dolor sit amet")
     )
 
+    val fetchingDelay = 1000L
+
     override fun getRange(fromIndex: Int, toIndex: Int): Array<MovieMetadata> {
-        if(fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
+        Thread.sleep(fetchingDelay)
+        if (fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
         val begin = if (fromIndex < 0) 0 else fromIndex
         val end = if (toIndex > data.size - 1) data.size else toIndex + 1
         return data.copyOfRange(begin, end)

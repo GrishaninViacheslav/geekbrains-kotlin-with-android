@@ -77,7 +77,6 @@ class RecommendationFeedViewModel(
             adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
         }
 
-        Thread.sleep(1000)
         fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
             cropFeedBuffer(fetchBottom)
