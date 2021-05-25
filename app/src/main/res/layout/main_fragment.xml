@@ -21,6 +21,17 @@
         android:background="@color/white"
         tools:listitem="@layout/item" />
 
+    <TextView
+        android:id="@+id/error_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/red"
+        android:fontFamily="@string/error_font"
+        android:gravity="center_horizontal"
+        android:text="ERROR"
+        android:textColor="@color/white"
+        android:visibility="gone" />
+
     <Space
         android:id="@+id/bottom_menu"
         android:layout_width="match_parent"

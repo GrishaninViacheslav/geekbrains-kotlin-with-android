@@ -5,6 +5,7 @@ import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
 import android.os.Handler
 import android.os.Looper
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -29,7 +30,8 @@ class RecommendationFeedViewModel(
     private val numberOfBufferingItems: Int = 2,
     private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
-    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
+    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
+    private val feedState: MutableLiveData<AppState> = MutableLiveData()
 ) : ViewModel() {
     private val fetchingExecutorService: ExecutorService = Executors.newSingleThreadExecutor()
     private var bottomIsFetching: Boolean = false
@@ -68,13 +70,19 @@ class RecommendationFeedViewModel(
                 fetchToIndex = firstItemIndex - 1
                 insertIndex = 0
             }
-            val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
-            removeLoadingItem(fetchBottom)
-            feedBuffer.addAll(
-                insertIndex,
-                toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
-            )
-            adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
+            try{
+                val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
+                removeLoadingItem(fetchBottom)
+                feedBuffer.addAll(
+                    insertIndex,
+                    toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
+                )
+                adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
+                feedState.postValue(AppState.Success)
+            }catch (e: Throwable){
+                feedState.postValue(AppState.Error(e))
+                removeLoadingItem(fetchBottom)
+            }
         }
 
         fetchItemsToFeedBuffer()
@@ -156,6 +164,7 @@ class RecommendationFeedViewModel(
         } else {
             topIsFetching = true
         }
+        feedState.value = AppState.Loading
         addLoadingItem(feedBottom)
         fetchingExecutorService.execute {
             fetchData(feedBottom)
@@ -169,4 +178,6 @@ class RecommendationFeedViewModel(
     fun getItem(index: Int): RVItemState {
         return feedBuffer[index]
     }
+
+    fun getFeedState() = feedState
 }

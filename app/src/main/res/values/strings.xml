@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">geekbrains-kotlin-with-android</string>
+    <string name="error_font">sans-serif-medium</string>
 </resources>

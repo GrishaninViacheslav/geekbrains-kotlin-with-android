@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.domain.model
 
 import GeekBrians.Slava_5655380.domain.MovieMetadata
+import kotlin.random.Random
 
 class DebugRepository : Repository {
     private val data = arrayOf(
@@ -83,6 +84,11 @@ class DebugRepository : Repository {
 
     override fun getRange(fromIndex: Int, toIndex: Int): Array<MovieMetadata> {
         Thread.sleep(fetchingDelay)
+
+        if(fromIndex > 7 && Random.nextBoolean()){
+            throw Throwable("Ошибка загрузки")
+        }
+
         if (fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
         val begin = if (fromIndex < 0) 0 else fromIndex
         val end = if (toIndex > data.size - 1) data.size else toIndex + 1
