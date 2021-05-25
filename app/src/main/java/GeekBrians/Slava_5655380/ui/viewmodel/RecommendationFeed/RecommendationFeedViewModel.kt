@@ -16,6 +16,13 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
+// TODO: исправить баги:
+//              - первый элемент может продублироваться если начать скролить ленту до того как в первый раз
+//                прогрузится первые элементы
+//              - приложение может крашнуться с ошибкой Inconsistency detected. Invalid view holder adapter positionViewHolder,
+//                если при малом значении feedBufferMaxSize (например 7) быстро листать ленту от
+//                верхнего края до нижнего и обратно, вызывая этим feed для обоих концов ленты одновременно
+//              - приложение вылетает если значение feedBufferMaxSize слишком мало
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
@@ -29,14 +36,15 @@ class RecommendationFeedViewModel(
     private var topIsFetching: Boolean = false
 
     private fun fetchData(fetchBottom: Boolean) {
-        fun fetchItemsToFeedBuffer(){
+        fun fetchItemsToFeedBuffer() {
             fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
-            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int){
+
+            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int) {
                 var rangeInsertStart: Int = prevFeedBufferSize - 1
                 var rangeInsertCount: Int = fetchedDataSize + 1
-                if(!fetchBottom){
+                if (!fetchBottom) {
                     rangeInsertStart = 0
                     rangeInsertCount = fetchedDataSize
                 }
@@ -61,7 +69,7 @@ class RecommendationFeedViewModel(
                 insertIndex = 0
             }
             val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
-            setSuccessState(fetchBottom)
+            removeLoadingItem(fetchBottom)
             feedBuffer.addAll(
                 insertIndex,
                 toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
@@ -82,51 +90,35 @@ class RecommendationFeedViewModel(
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
-        // TODO: вынести feedBuffer.subList и uiThreadHandler.post
+        var cropFromIndex: Int
+        var cropToIndex: Int
         if (cropBottom) {
-            var itemsToCrop = feedBuffer.size - feedBufferMaxSize
             if (feedBuffer[0] is RVItemState.Loading) {
-                itemsToCrop -= 1
-                feedBuffer.subList(1, itemsToCrop + 1).clear()
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeRemoved(
-                        1,
-                        itemsToCrop
-                    )
-                }
+                cropFromIndex = 1
+                cropToIndex = feedBuffer.size - feedBufferMaxSize
             } else {
-                feedBuffer.subList(0, itemsToCrop).clear()
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeRemoved(
-                        0,
-                        itemsToCrop
-                    )
-                }
+                cropFromIndex = 0
+                cropToIndex = feedBuffer.size - feedBufferMaxSize
             }
         } else {
-            var itemsToCrop = feedBuffer.size - feedBufferMaxSize
-            var cropStartPosition = feedBuffer.size - itemsToCrop
             if (feedBuffer[feedBuffer.size - 1] is RVItemState.Loading) {
-                feedBuffer.subList(cropStartPosition, feedBuffer.size - 1).clear()
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeRemoved(
-                        cropStartPosition,
-                        itemsToCrop - 1
-                    )
-                }
+                cropFromIndex = feedBuffer.size - (feedBuffer.size - feedBufferMaxSize)
+                cropToIndex = feedBuffer.size - 1
             } else {
-                feedBuffer.subList(feedBuffer.size - itemsToCrop, feedBuffer.size).clear()
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeRemoved(
-                        cropStartPosition,
-                        itemsToCrop
-                    )
-                }
+                cropFromIndex = feedBuffer.size - (feedBuffer.size - feedBufferMaxSize)
+                cropToIndex = feedBuffer.size
             }
+        }
+        feedBuffer.subList(cropFromIndex, cropToIndex).clear()
+        uiThreadHandler.post {
+            adapter.notifyItemRangeRemoved(
+                cropFromIndex,
+                cropToIndex - cropFromIndex
+            )
         }
     }
 
-    private fun setLoadingState(fetchedByIndexIncrease: Boolean) {
+    private fun addLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[feedBuffer.size - 1] !is RVItemState.Loading)) {
             feedBuffer.add(RVItemState.Loading)
             uiThreadHandler.post {
@@ -140,7 +132,7 @@ class RecommendationFeedViewModel(
         }
     }
 
-    private fun setSuccessState(fetchedByIndexIncrease: Boolean) {
+    private fun removeLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
             feedBuffer.removeAt(feedBuffer.size - 1)
             uiThreadHandler.post {
@@ -165,7 +157,7 @@ class RecommendationFeedViewModel(
         } else {
             topIsFetching = true
         }
-        setLoadingState(feedBottom)
+        addLoadingItem(feedBottom)
         fetchingExecutorService.execute {
             fetchData(feedBottom)
         }
