@@ -11,24 +11,18 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 
-// TODO: реализовать инициализацию ленты(первое заполнение ленты элементами),
-//             предоставлющую готовую к взаимодействиям ленту и возможностью задать
-//             начальную позицию ленты
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
-// TODO: исправить баги:
-//              - первый элемент может продублироваться если начать скролить ленту до того как в первый раз
-//                прогрузится первые элементы
-//              - приложение может крашнуться с ошибкой Inconsistency detected. Invalid view holder adapter positionViewHolder,
-//                если при малом значении feedBufferMaxSize (например 7) быстро листать ленту от
-//                верхнего края до нижнего и обратно, вызывая этим feed для обоих концов ленты одновременно
-//              - приложение вылетает если значение feedBufferMaxSize слишком мало
+// TODO: исправить баг приводящий к ошибке Inconsistency detected. Invalid view holder adapter
+//              positionViewHolder, если при малом значении feedBufferMaxSize (например 7) быстро
+//              листать ленту от верхнего края до нижнего и обратно, вызывая этим feed для обоих
+//              концов ленты одновременно
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
-    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems,
+    private val feedBufferMaxSize: Int = 7 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
     private val feedState: MutableLiveData<AppState> = MutableLiveData()
@@ -37,6 +31,7 @@ class RecommendationFeedViewModel(
     private var bottomIsFetching: Boolean = false
     private var topIsFetching: Boolean = false
 
+    @Synchronized
     private fun fetchData(fetchBottom: Boolean) {
         fun fetchItemsToFeedBuffer() {
             fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
@@ -61,22 +56,22 @@ class RecommendationFeedViewModel(
             var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
-            var insertIndex: Int = feedBuffer.size - 1
             val prevFeedBufferSize = feedBuffer.size
             if (!fetchBottom) {
                 val firstItemIndex =
                     if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
                 fetchFromIndex = firstItemIndex - numberOfBufferingItems
                 fetchToIndex = firstItemIndex - 1
-                insertIndex = 0
             }
             try{
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 removeLoadingItem(fetchBottom)
-                feedBuffer.addAll(
-                    insertIndex,
-                    toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList())
-                )
+                if(fetchBottom){
+                    feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
+                }
+                else{
+                    feedBuffer.addAll(0, toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList()))
+                }
                 adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
                 feedState.postValue(AppState.Success)
             }catch (e: Throwable){
@@ -157,6 +152,9 @@ class RecommendationFeedViewModel(
 
     fun feed(feedBottom: Boolean) {
         if (feedBottom && bottomIsFetching || !feedBottom && topIsFetching) {
+            return
+        }
+        if(feedBuffer.size == 1 && feedBuffer[0] is RVItemState.Loading){
             return
         }
         if (feedBottom) {
