@@ -22,7 +22,7 @@ class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
-    private val feedBufferMaxSize: Int = 7 - numberOfBufferingItems,
+    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
     private val feedState: MutableLiveData<AppState> = MutableLiveData()
