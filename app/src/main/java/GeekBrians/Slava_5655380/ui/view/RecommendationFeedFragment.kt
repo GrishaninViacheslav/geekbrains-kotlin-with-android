@@ -46,10 +46,10 @@ class RecommendationFeedFragment : Fragment() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 isInitialScrollStateChanged = true
-                if (!recyclerView.canScrollVertically(1)) {
+                if (layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - 3) {
                     viewModel.feed(true)
                 }
-                if (!recyclerView.canScrollVertically(-1)) {
+                if (layoutManager.findFirstVisibleItemPosition() < 3) {
                     viewModel.feed(false)
                 }
 

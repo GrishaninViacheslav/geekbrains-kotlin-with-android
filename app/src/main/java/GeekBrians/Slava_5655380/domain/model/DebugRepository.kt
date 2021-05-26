@@ -86,7 +86,7 @@ class DebugRepository : Repository {
         Thread.sleep(fetchingDelay)
 
         if(fromIndex > 7 && Random.nextBoolean()){
-            throw Throwable("Ошибка загрузки")
+            //throw Throwable("Ошибка загрузки")
         }
 
         if (fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
