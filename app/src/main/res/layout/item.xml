@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <Space
+    <VideoView
         android:id="@+id/background_video"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bg_video_height"
