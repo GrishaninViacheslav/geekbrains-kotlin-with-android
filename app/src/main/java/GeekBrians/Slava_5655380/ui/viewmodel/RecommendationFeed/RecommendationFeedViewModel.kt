@@ -5,6 +5,7 @@ import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.util.concurrent.ExecutorService
@@ -14,10 +15,6 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
-// TODO: исправить баг приводящий к ошибке Inconsistency detected. Invalid view holder adapter
-//              positionViewHolder, если при малом значении feedBufferMaxSize (например 7) быстро
-//              листать ленту от верхнего края до нижнего и обратно, вызывая этим feed для обоих
-//              концов ленты одновременно
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
@@ -39,12 +36,13 @@ class RecommendationFeedViewModel(
             }
 
             fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int) {
-                var rangeInsertStart: Int = prevFeedBufferSize - 1
-                var rangeInsertCount: Int = fetchedDataSize + 1
+                var rangeInsertStart: Int = prevFeedBufferSize
+                var rangeInsertCount: Int = fetchedDataSize
                 if (!fetchBottom) {
                     rangeInsertStart = 0
                     rangeInsertCount = fetchedDataSize
                 }
+                Log.d("[MYLOG]", "rangeInsertStart: $rangeInsertStart, rangeInsertCount: $rangeInsertCount")
                 uiThreadHandler.post {
                     adapter.notifyItemRangeInserted(
                         rangeInsertStart,
@@ -53,10 +51,10 @@ class RecommendationFeedViewModel(
                 }
             }
 
+            Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
             var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
-            val prevFeedBufferSize = feedBuffer.size
             if (!fetchBottom) {
                 val firstItemIndex =
                     if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
@@ -65,13 +63,27 @@ class RecommendationFeedViewModel(
             }
             try{
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
+                Log.d("[MYLOG]", "fetchedData[")
+                for(el in fetchedData){
+                    Log.d("[MYLOG]", "${el.index}")
+                }
+                Log.d("[MYLOG]", "]")
                 removeLoadingItem(fetchBottom)
+                val prevFeedBufferSize = feedBuffer.size
                 if(fetchBottom){
                     feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
                 }
                 else{
                     feedBuffer.addAll(0, toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList()))
                 }
+                Log.d("[MYLOG]", "feedBuffer[")
+                for(el in feedBuffer){
+                    when(el){
+                        is RVItemState.Success -> Log.d("[MYLOG]", "${el.movieMetadata.index}")
+                        RVItemState.Loading -> Log.d("[MYLOG]", "Loading")
+                    }
+                }
+                Log.d("[MYLOG]", "]")
                 adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
                 feedState.postValue(AppState.Success)
             }catch (e: Throwable){
