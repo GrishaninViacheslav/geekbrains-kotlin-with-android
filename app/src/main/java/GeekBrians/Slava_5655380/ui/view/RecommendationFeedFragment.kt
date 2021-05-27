@@ -4,6 +4,7 @@ import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecommendationFeedViewModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -14,6 +15,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.*
 
 class RecommendationFeedFragment : Fragment() {
 
@@ -41,25 +43,43 @@ class RecommendationFeedFragment : Fragment() {
 
         viewModel.feed(true)
 
-        var isInitialScrollStateChanged: Boolean = false
         binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            private var scrollState = SCROLL_STATE_SETTLING
+            private var lastDy = 0
+            private val feedNecessityThreshold = 3
+
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                isInitialScrollStateChanged = true
-                if (!recyclerView.canScrollVertically(1)) {
-                    viewModel.feed(true)
-                }
-                if (!recyclerView.canScrollVertically(-1)) {
-                    viewModel.feed(false)
+                Log.d("[MYLOG]", "onScrollStateChanged newState: $newState")
+                scrollState = newState
+                if(newState == SCROLL_STATE_IDLE){
+                    if (lastDy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                        viewModel.feed(true)
+                    }
+                    if (lastDy < 0 && layoutManager.findFirstVisibleItemPosition() < feedNecessityThreshold) {
+                        viewModel.feed(false)
+                    }
                 }
 
             }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
-                if (!isInitialScrollStateChanged) {
+                lastDy = dy
+                if (dx == 0 && dy == 0) {
                     if (!recyclerView.canScrollVertically(1)) {
                         viewModel.feed(true)
+                    }
+                }
+                if(scrollState == SCROLL_STATE_DRAGGING){
+                    // TODO: проконтролировать, чтобы значение feedNecessityThreshold
+                    //             не был слишком большим, то есть таким при котором
+                    //             постоянно вызывались бы feed для обоих концов ленты
+                    if (dy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                        viewModel.feed(true)
+                    }
+                    if (dy < 0 && layoutManager.findFirstVisibleItemPosition() < feedNecessityThreshold) {
+                        viewModel.feed(false)
                     }
                 }
             }

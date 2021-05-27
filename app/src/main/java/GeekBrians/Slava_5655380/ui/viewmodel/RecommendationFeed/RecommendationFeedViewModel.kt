@@ -19,7 +19,7 @@ class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
-    private val feedBufferMaxSize: Int = 10 - numberOfBufferingItems,
+    private val feedBufferMaxSize: Int = 12 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
     private val feedState: MutableLiveData<AppState> = MutableLiveData()
@@ -42,7 +42,6 @@ class RecommendationFeedViewModel(
                     rangeInsertStart = 0
                     rangeInsertCount = fetchedDataSize
                 }
-                Log.d("[MYLOG]", "rangeInsertStart: $rangeInsertStart, rangeInsertCount: $rangeInsertCount")
                 uiThreadHandler.post {
                     adapter.notifyItemRangeInserted(
                         rangeInsertStart,
@@ -63,11 +62,6 @@ class RecommendationFeedViewModel(
             }
             try{
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
-                Log.d("[MYLOG]", "fetchedData[")
-                for(el in fetchedData){
-                    Log.d("[MYLOG]", "${el.index}")
-                }
-                Log.d("[MYLOG]", "]")
                 removeLoadingItem(fetchBottom)
                 val prevFeedBufferSize = feedBuffer.size
                 if(fetchBottom){
@@ -76,14 +70,6 @@ class RecommendationFeedViewModel(
                 else{
                     feedBuffer.addAll(0, toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList()))
                 }
-                Log.d("[MYLOG]", "feedBuffer[")
-                for(el in feedBuffer){
-                    when(el){
-                        is RVItemState.Success -> Log.d("[MYLOG]", "${el.movieMetadata.index}")
-                        RVItemState.Loading -> Log.d("[MYLOG]", "Loading")
-                    }
-                }
-                Log.d("[MYLOG]", "]")
                 adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
                 feedState.postValue(AppState.Success)
             }catch (e: Throwable){
