@@ -34,12 +34,14 @@ class RecommendationFeedFragment : Fragment() {
         _binding = MainFragmentBinding.inflate(inflater, container, false)
         viewModel = ViewModelProvider(this).get(RecommendationFeedViewModel::class.java)
         viewModel.getFeedState().observe(viewLifecycleOwner, Observer { renderFeedState(it) })
-        binding.recyclerViewLines.setHasFixedSize(true)
+        binding.recyclerViewLines.setHasFixedSize(false)
         val layoutManager = LinearLayoutManager(context)
         binding.recyclerViewLines.layoutManager = layoutManager
         binding.recyclerViewLines.itemAnimator =
             null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
+        viewModel.adapter.setHasStableIds(false)
         binding.recyclerViewLines.adapter = viewModel.adapter
+
 
         viewModel.feed(true)
 
