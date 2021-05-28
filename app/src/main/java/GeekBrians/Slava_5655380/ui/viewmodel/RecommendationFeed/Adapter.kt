@@ -29,7 +29,8 @@ class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView
                 viewHolder.view.findViewById<TextView>(R.id.localized_title).visibility = VISIBLE
                 viewHolder.view.findViewById<ProgressBar>(R.id.progress_bar).visibility = GONE
 
-                viewHolder.view.findViewById<TextView>(R.id.localized_title).text = rvItemState.movieMetadata.index.toString()
+                viewHolder.view.findViewById<TextView>(R.id.localized_title).text = rvItemState.movieDataItem.index.toString()
+                viewHolder.view.findViewById<PlayerView>(R.id.background_video).player = rvItemState.movieDataItem.trailer
             }
             is RVItemState.Loading -> {
                 viewHolder.view.findViewById<PlayerView>(R.id.background_video).visibility = GONE

@@ -52,27 +52,27 @@ class RecommendationFeedViewModel(
 
             Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
             var fetchFromIndex: Int =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieMetadata.index + 1
+                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
             if (!fetchBottom) {
                 val firstItemIndex =
-                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieMetadata.index
+                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieDataItem.index
                 fetchFromIndex = firstItemIndex - numberOfBufferingItems
                 fetchToIndex = firstItemIndex - 1
             }
-            try{
+            try {
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
+                val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
                 removeLoadingItem(fetchBottom)
                 val prevFeedBufferSize = feedBuffer.size
-                if(fetchBottom){
-                    feedBuffer.addAll(toSuccessRVItemStateArray(fetchedData))
-                }
-                else{
-                    feedBuffer.addAll(0, toSuccessRVItemStateArray(fetchedData).toCollection(ArrayList()))
+                if (fetchBottom) {
+                    feedBuffer.addAll(successRVItemStateArray)
+                } else {
+                    feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
                 }
                 adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
                 feedState.postValue(AppState.Success)
-            }catch (e: Throwable){
+            } catch (e: Throwable) {
                 feedState.postValue(AppState.Error(e))
                 removeLoadingItem(fetchBottom)
             }
@@ -109,6 +109,13 @@ class RecommendationFeedViewModel(
                 cropToIndex = feedBuffer.size
             }
         }
+
+        feedBuffer.subList(cropFromIndex, cropToIndex)
+            .forEach {
+                uiThreadHandler.post {
+                    (it as RVItemState.Success).movieDataItem.trailer.release()
+                }
+            }
         feedBuffer.subList(cropFromIndex, cropToIndex).clear()
         uiThreadHandler.post {
             adapter.notifyItemRangeRemoved(
@@ -152,7 +159,7 @@ class RecommendationFeedViewModel(
         if (feedBottom && bottomIsFetching || !feedBottom && topIsFetching) {
             return
         }
-        if(feedBuffer.size == 1 && feedBuffer[0] is RVItemState.Loading){
+        if (feedBuffer.size == 1 && feedBuffer[0] is RVItemState.Loading) {
             return
         }
         if (feedBottom) {
