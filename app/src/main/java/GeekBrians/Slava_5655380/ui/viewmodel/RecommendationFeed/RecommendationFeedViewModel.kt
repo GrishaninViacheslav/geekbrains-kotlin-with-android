@@ -1,16 +1,16 @@
 package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
 
-import GeekBrians.Slava_5655380.domain.model.DebugRepository
 import GeekBrians.Slava_5655380.domain.MovieMetadata
+import GeekBrians.Slava_5655380.domain.model.DebugRepository
 import GeekBrians.Slava_5655380.domain.model.Repository
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.collections.ArrayList
 
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
@@ -28,6 +28,10 @@ class RecommendationFeedViewModel(
     private var bottomIsFetching: Boolean = false
     private var topIsFetching: Boolean = false
 
+    val TAG: String = "[RFVM]"
+
+    var countDownLatch: CountDownLatch = CountDownLatch(1)
+
     @Synchronized
     private fun fetchData(fetchBottom: Boolean) {
         fun fetchItemsToFeedBuffer() {
@@ -35,22 +39,17 @@ class RecommendationFeedViewModel(
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
 
-            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int) {
-                var rangeInsertStart: Int = prevFeedBufferSize
-                var rangeInsertCount: Int = fetchedDataSize
-                if (!fetchBottom) {
-                    rangeInsertStart = 0
-                    rangeInsertCount = fetchedDataSize
-                }
+            fun adapterRangeInsertedNotify(fetchedDataSize: Int) {
                 uiThreadHandler.post {
+                    Log.d(TAG, "positionStart: ${if(fetchBottom) feedBuffer.size - fetchedDataSize else 0}, itemCount: $fetchedDataSize")
                     adapter.notifyItemRangeInserted(
-                        rangeInsertStart,
-                        rangeInsertCount
+                        if(fetchBottom) feedBuffer.size - fetchedDataSize else 0,
+                        fetchedDataSize
                     )
+                    countDownLatch.countDown()
                 }
             }
 
-            Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
             var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
@@ -61,16 +60,33 @@ class RecommendationFeedViewModel(
                 fetchToIndex = firstItemIndex - 1
             }
             try {
+                Log.d(TAG, "fetchFromIndex: $fetchFromIndex, fetchToIndex: $fetchToIndex")
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
+                Log.d(TAG, "successRVItemStateArray[")
+                for(el in successRVItemStateArray){
+                    when(el){
+                        is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                        else -> Log.d(TAG, "Loading")
+                    }
+                }
+                Log.d(TAG, "]")
                 removeLoadingItem(fetchBottom)
-                val prevFeedBufferSize = feedBuffer.size
+                countDownLatch = CountDownLatch(1)
                 if (fetchBottom) {
                     feedBuffer.addAll(successRVItemStateArray)
                 } else {
                     feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
                 }
-                adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
+                Log.d(TAG, "feedBuffer[")
+                for(el in feedBuffer){
+                    when(el){
+                        is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                        RVItemState.Loading -> Log.d(TAG, "Loading")
+                    }
+                }
+                Log.d(TAG, "]")
+                adapterRangeInsertedNotify(fetchedData.size.toInt())
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
                 feedState.postValue(AppState.Error(e))
@@ -78,8 +94,10 @@ class RecommendationFeedViewModel(
             }
         }
 
+        Log.d(TAG, "fetchData fetchBottom: $fetchBottom")
         fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
+            countDownLatch.await()
             cropFeedBuffer(fetchBottom)
         }
         if (fetchBottom) {
@@ -90,6 +108,8 @@ class RecommendationFeedViewModel(
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
+        Log.d(TAG, "cropFeedBuffer cropBottom: $cropBottom")
+
         var cropFromIndex: Int
         var cropToIndex: Int
         if (cropBottom) {
@@ -117,7 +137,16 @@ class RecommendationFeedViewModel(
                 }
             }
         feedBuffer.subList(cropFromIndex, cropToIndex).clear()
+        Log.d(TAG, "croppedFeedBuffer[")
+        for(el in feedBuffer){
+            when(el){
+                is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                RVItemState.Loading -> Log.d(TAG, "Loading")
+            }
+        }
+        Log.d(TAG, "]")
         uiThreadHandler.post {
+            Log.d(TAG, "cropFromIndex: $cropFromIndex, itemCount: ${cropToIndex - cropFromIndex}")
             adapter.notifyItemRangeRemoved(
                 cropFromIndex,
                 cropToIndex - cropFromIndex
