@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
@@ -15,6 +16,7 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
+// TODO: иногда индексы могут быть неверными, нужно добавить логирование
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
@@ -34,23 +36,7 @@ class RecommendationFeedViewModel(
             fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
-
-            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int) {
-                var rangeInsertStart: Int = prevFeedBufferSize
-                var rangeInsertCount: Int = fetchedDataSize
-                if (!fetchBottom) {
-                    rangeInsertStart = 0
-                    rangeInsertCount = fetchedDataSize
-                }
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeInserted(
-                        rangeInsertStart,
-                        rangeInsertCount
-                    )
-                }
-            }
-
-            Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
+            cdl.await()
             var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
@@ -63,14 +49,26 @@ class RecommendationFeedViewModel(
             try {
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
-                removeLoadingItem(fetchBottom)
-                val prevFeedBufferSize = feedBuffer.size
-                if (fetchBottom) {
-                    feedBuffer.addAll(successRVItemStateArray)
-                } else {
-                    feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
+                uiThreadHandler.post {
+                    if (fetchBottom && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
+                        feedBuffer.removeAt(feedBuffer.size - 1)
+                        adapter.notifyItemRemoved(feedBuffer.size)
+
+                    } else if (!fetchBottom && feedBuffer[0] !is RVItemState.Success) {
+                        feedBuffer.removeAt(0)
+                        adapter.notifyItemRemoved(0)
+                    }
+
+                    if (fetchBottom) {
+                        feedBuffer.addAll(successRVItemStateArray)
+                    } else {
+                        feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
+                    }
+                    adapter.notifyItemRangeInserted(
+                        if (fetchBottom) feedBuffer.size - fetchedData.size else 0,
+                        fetchedData.size
+                    )
                 }
-                adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
                 feedState.postValue(AppState.Error(e))
@@ -110,14 +108,15 @@ class RecommendationFeedViewModel(
             }
         }
 
-        feedBuffer.subList(cropFromIndex, cropToIndex)
-            .forEach {
-                uiThreadHandler.post {
-                    (it as RVItemState.Success).movieDataItem.trailer.release()
-                }
-            }
-        feedBuffer.subList(cropFromIndex, cropToIndex).clear()
         uiThreadHandler.post {
+            feedBuffer.subList(cropFromIndex, cropToIndex)
+                .forEach {
+                    // TODO: разобраться почему здесь может быть RVItemState.Loading
+                    if(it is RVItemState.Success){
+                        (it as RVItemState.Success).movieDataItem.trailer.release()
+                    }
+                }
+            feedBuffer.subList(cropFromIndex, cropToIndex).clear()
             adapter.notifyItemRangeRemoved(
                 cropFromIndex,
                 cropToIndex - cropFromIndex
@@ -125,29 +124,34 @@ class RecommendationFeedViewModel(
         }
     }
 
+    private var cdl: CountDownLatch = CountDownLatch(1)
     private fun addLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[feedBuffer.size - 1] !is RVItemState.Loading)) {
-            feedBuffer.add(RVItemState.Loading)
+            cdl = CountDownLatch(1)
             uiThreadHandler.post {
+                feedBuffer.add(RVItemState.Loading)
                 adapter.notifyItemInserted(feedBuffer.size - 1)
+                cdl.countDown()
             }
         } else if (!fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[0] !is RVItemState.Loading)) {
-            feedBuffer.add(0, RVItemState.Loading)
+            cdl = CountDownLatch(1)
             uiThreadHandler.post {
+                feedBuffer.add(0, RVItemState.Loading)
                 adapter.notifyItemInserted(0)
+                cdl.countDown()
             }
         }
     }
 
     private fun removeLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
-            feedBuffer.removeAt(feedBuffer.size - 1)
             uiThreadHandler.post {
+                feedBuffer.removeAt(feedBuffer.size - 1)
                 adapter.notifyItemRemoved(feedBuffer.size)
             }
         } else if (!fetchedByIndexIncrease && feedBuffer[0] !is RVItemState.Success) {
-            feedBuffer.removeAt(0)
             uiThreadHandler.post {
+                feedBuffer.removeAt(0)
                 adapter.notifyItemRemoved(0)
             }
         }
