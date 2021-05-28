@@ -8,6 +8,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
@@ -20,7 +21,7 @@ class RecommendationFeedViewModel(
     private val repository: Repository = DebugRepository(),
     private val numberOfBufferingItems: Int = 2,
     private val feedBufferMaxSize: Int = 12 - numberOfBufferingItems,
-    private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
+    private var feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
     private val feedState: MutableLiveData<AppState> = MutableLiveData()
 ) : ViewModel() {
@@ -34,22 +35,6 @@ class RecommendationFeedViewModel(
             fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
-
-            fun adapterRangeInsertedNotify(prevFeedBufferSize: Int, fetchedDataSize: Int) {
-                var rangeInsertStart: Int = prevFeedBufferSize
-                var rangeInsertCount: Int = fetchedDataSize
-                if (!fetchBottom) {
-                    rangeInsertStart = 0
-                    rangeInsertCount = fetchedDataSize
-                }
-                uiThreadHandler.post {
-                    adapter.notifyItemRangeInserted(
-                        rangeInsertStart,
-                        rangeInsertCount
-                    )
-                }
-            }
-
             Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
             var fetchFromIndex: Int =
                 if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
@@ -65,12 +50,17 @@ class RecommendationFeedViewModel(
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
                 removeLoadingItem(fetchBottom)
                 val prevFeedBufferSize = feedBuffer.size
+                val res = ArrayList<RVItemState>()
+                feedBuffer.forEach{res.add(it)}
                 if (fetchBottom) {
-                    feedBuffer.addAll(successRVItemStateArray)
+                    res.addAll(successRVItemStateArray)
                 } else {
-                    feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
+                    res.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
                 }
-                adapterRangeInsertedNotify(prevFeedBufferSize, fetchedData.size)
+                uiThreadHandler.post{
+                    feedBuffer = res
+                    adapter.notifyDataSetChanged()
+                }
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
                 feedState.postValue(AppState.Error(e))
@@ -110,45 +100,57 @@ class RecommendationFeedViewModel(
             }
         }
 
-        feedBuffer.subList(cropFromIndex, cropToIndex)
+        val res = ArrayList<RVItemState>()
+        feedBuffer.forEach{res.add(it)}
+        res.subList(cropFromIndex, cropToIndex)
             .forEach {
                 uiThreadHandler.post {
                     (it as RVItemState.Success).movieDataItem.trailer.release()
                 }
             }
-        feedBuffer.subList(cropFromIndex, cropToIndex).clear()
+        res.subList(cropFromIndex, cropToIndex).clear()
         uiThreadHandler.post {
-            adapter.notifyItemRangeRemoved(
-                cropFromIndex,
-                cropToIndex - cropFromIndex
-            )
+            feedBuffer = res
+            adapter.notifyDataSetChanged()
         }
     }
 
     private fun addLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[feedBuffer.size - 1] !is RVItemState.Loading)) {
-            feedBuffer.add(RVItemState.Loading)
+            val res = ArrayList<RVItemState>()
+            feedBuffer.forEach{res.add(it)}
+            res.add(RVItemState.Loading)
             uiThreadHandler.post {
-                adapter.notifyItemInserted(feedBuffer.size - 1)
+                feedBuffer = res
+                adapter.notifyDataSetChanged()
             }
         } else if (!fetchedByIndexIncrease && (feedBuffer.size == 0 || feedBuffer[0] !is RVItemState.Loading)) {
-            feedBuffer.add(0, RVItemState.Loading)
+            val res = ArrayList<RVItemState>()
+            feedBuffer.forEach{res.add(it)}
+            res.add(0, RVItemState.Loading)
             uiThreadHandler.post {
-                adapter.notifyItemInserted(0)
+                feedBuffer = res
+                adapter.notifyDataSetChanged()
             }
         }
     }
 
     private fun removeLoadingItem(fetchedByIndexIncrease: Boolean) {
         if (fetchedByIndexIncrease && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
-            feedBuffer.removeAt(feedBuffer.size - 1)
+            val res = ArrayList<RVItemState>()
+            feedBuffer.forEach{res.add(it)}
+            res.removeAt(feedBuffer.size - 1)
             uiThreadHandler.post {
-                adapter.notifyItemRemoved(feedBuffer.size)
+                feedBuffer = res
+                adapter.notifyDataSetChanged()
             }
         } else if (!fetchedByIndexIncrease && feedBuffer[0] !is RVItemState.Success) {
-            feedBuffer.removeAt(0)
+            val res = ArrayList<RVItemState>()
+            feedBuffer.forEach{res.add(it)}
+            res.removeAt(0)
             uiThreadHandler.post {
-                adapter.notifyItemRemoved(0)
+                feedBuffer = res
+                adapter.notifyDataSetChanged()
             }
         }
     }
