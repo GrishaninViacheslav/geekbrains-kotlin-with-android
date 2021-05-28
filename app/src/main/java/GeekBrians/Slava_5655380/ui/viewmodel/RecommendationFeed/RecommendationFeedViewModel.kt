@@ -29,15 +29,16 @@ class RecommendationFeedViewModel(
     private var bottomIsFetching: Boolean = false
     private var topIsFetching: Boolean = false
 
+    private val TAG = "[RFVM]"
+
     @Synchronized
     private fun fetchData(fetchBottom: Boolean) {
         fun fetchItemsToFeedBuffer() {
             fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
-            Log.d("[MYLOG]", "fetchData fetchBottom: $fetchBottom")
             var fetchFromIndex: Int =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
+                if (feedBuffer.size == 1 || feedBuffer.size == 0) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
             if (!fetchBottom) {
                 val firstItemIndex =
@@ -46,8 +47,17 @@ class RecommendationFeedViewModel(
                 fetchToIndex = firstItemIndex - 1
             }
             try {
+                Log.d(TAG, "fetchFromIndex: $fetchFromIndex, fetchToIndex: $fetchToIndex")
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
+                Log.d(TAG, "successRVItemStateArray[")
+                for(el in successRVItemStateArray){
+                    when(el){
+                        is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                        RVItemState.Loading -> Log.d(TAG, "Loading")
+                    }
+                }
+                Log.d(TAG, "]")
                 removeLoadingItem(fetchBottom)
                 val prevFeedBufferSize = feedBuffer.size
                 val res = ArrayList<RVItemState>()
@@ -60,6 +70,14 @@ class RecommendationFeedViewModel(
                 uiThreadHandler.post{
                     feedBuffer = res
                     adapter.notifyDataSetChanged()
+                    Log.d(TAG, "feedBuffer[")
+                    for(el in feedBuffer){
+                        when(el){
+                            is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                            RVItemState.Loading -> Log.d(TAG, "Loading")
+                        }
+                    }
+                    Log.d(TAG, "]")
                 }
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
@@ -68,6 +86,7 @@ class RecommendationFeedViewModel(
             }
         }
 
+        Log.d(TAG, "fetchData fetchBottom: $fetchBottom")
         fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
             cropFeedBuffer(fetchBottom)
@@ -80,6 +99,7 @@ class RecommendationFeedViewModel(
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
+        Log.d(TAG, "cropFeedBuffer cropBottom: $cropBottom")
         var cropFromIndex: Int
         var cropToIndex: Int
         if (cropBottom) {
@@ -100,6 +120,7 @@ class RecommendationFeedViewModel(
             }
         }
 
+        Log.d(TAG, "cropFromIndex: $cropFromIndex, cropToIndex: $cropToIndex")
         val res = ArrayList<RVItemState>()
         feedBuffer.forEach{res.add(it)}
         res.subList(cropFromIndex, cropToIndex)
@@ -112,6 +133,14 @@ class RecommendationFeedViewModel(
         uiThreadHandler.post {
             feedBuffer = res
             adapter.notifyDataSetChanged()
+            Log.d(TAG, "croppedFeedBuffer[")
+            for(el in feedBuffer){
+                when(el){
+                    is RVItemState.Success -> Log.d(TAG, "${el.movieDataItem.index}")
+                    RVItemState.Loading -> Log.d(TAG, "Loading")
+                }
+            }
+            Log.d(TAG, "]")
         }
     }
 
