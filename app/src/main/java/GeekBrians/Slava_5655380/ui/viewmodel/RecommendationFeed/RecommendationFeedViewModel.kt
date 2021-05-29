@@ -16,7 +16,6 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
-// TODO: иногда индексы могут быть неверными, нужно добавить логирование
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = DebugRepository(),
@@ -53,6 +52,7 @@ class RecommendationFeedViewModel(
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
                 logRVItemStateArray(successRVItemStateArray, "successRVItemStateArray")
+                val cdl2 = CountDownLatch(1)
                 uiThreadHandler.post {
                     if (fetchBottom && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
                         feedBuffer.removeAt(feedBuffer.size - 1)
@@ -74,8 +74,9 @@ class RecommendationFeedViewModel(
                         fetchedData.size
                     )
                     logRVItemStateArray(feedBuffer, "feedBuffer")
-
+                    cdl2.countDown()
                 }
+                cdl2.await()
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
                 feedState.postValue(AppState.Error(e))
