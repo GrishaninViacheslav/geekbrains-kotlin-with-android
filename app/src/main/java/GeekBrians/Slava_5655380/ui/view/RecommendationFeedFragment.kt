@@ -2,6 +2,7 @@ package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.AppState
+import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecomendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecommendationFeedViewModel
 import android.os.Bundle
 import android.util.Log
@@ -40,6 +41,7 @@ class RecommendationFeedFragment : Fragment() {
         binding.recyclerViewLines.itemAnimator =
             null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
         viewModel.adapter.setHasStableIds(false)
+        viewModel.adapter.getEventSource().observe(viewLifecycleOwner, Observer { handleEvent(it) })
         binding.recyclerViewLines.adapter = viewModel.adapter
 
 
@@ -52,7 +54,6 @@ class RecommendationFeedFragment : Fragment() {
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
-                Log.d("[MYLOG]", "onScrollStateChanged newState: $newState")
                 scrollState = newState
                 if(newState == SCROLL_STATE_IDLE){
                     if (lastDy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
@@ -99,6 +100,14 @@ class RecommendationFeedFragment : Fragment() {
             }
             AppState.Loading -> {
 
+            }
+        }
+    }
+
+    private fun handleEvent(event: Bundle){
+        when(event.getString(RecomendationFeedEvent.action)){
+            RecomendationFeedEvent.openFilmDetails -> {
+                Log.d("[MYLOG]", "open film #${event.getInt(RecomendationFeedEvent.filmIndex)} details ")
             }
         }
     }
