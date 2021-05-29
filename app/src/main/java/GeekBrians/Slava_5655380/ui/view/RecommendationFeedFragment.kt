@@ -1,9 +1,9 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
-import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.AppState
-import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecomendationFeedEvent
-import GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed.RecommendationFeedViewModel
+import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
+import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecomendationFeedEvent
+import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -40,8 +40,17 @@ class RecommendationFeedFragment : Fragment() {
         binding.recyclerViewLines.layoutManager = layoutManager
         binding.recyclerViewLines.itemAnimator =
             null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
-        viewModel.adapter.setHasStableIds(false)
-        viewModel.adapter.getEventSource().observe(viewLifecycleOwner, Observer { handleEvent(it) })
+        //viewModel.adapter.setHasStableIds(false)
+        Log.d("[MYLOG]", "setupBindings observe")
+        viewModel.adapter.getEventSource().observe(
+            viewLifecycleOwner,
+            Observer {
+                Log.d("[MYLOG]", "handleEvent");
+                val event: Bundle? = it.getContentIfNotHandled()
+                if(event != null){
+                    handleEvent(event)
+                }
+            })
         binding.recyclerViewLines.adapter = viewModel.adapter
 
 
@@ -55,7 +64,7 @@ class RecommendationFeedFragment : Fragment() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 scrollState = newState
-                if(newState == SCROLL_STATE_IDLE){
+                if (newState == SCROLL_STATE_IDLE) {
                     if (lastDy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
                         viewModel.feed(true)
                     }
@@ -74,7 +83,7 @@ class RecommendationFeedFragment : Fragment() {
                         viewModel.feed(true)
                     }
                 }
-                if(scrollState == SCROLL_STATE_DRAGGING){
+                if (scrollState == SCROLL_STATE_DRAGGING) {
                     // TODO: проконтролировать, чтобы значение feedNecessityThreshold
                     //             не был слишком большим, то есть таким при котором
                     //             постоянно вызывались бы feed для обоих концов ленты
@@ -89,8 +98,8 @@ class RecommendationFeedFragment : Fragment() {
         })
     }
 
-    private fun renderFeedState(feedState: AppState){
-        when(feedState){
+    private fun renderFeedState(feedState: AppState) {
+        when (feedState) {
             is AppState.Success -> {
                 binding.errorTextView.visibility = GONE
             }
@@ -104,10 +113,14 @@ class RecommendationFeedFragment : Fragment() {
         }
     }
 
-    private fun handleEvent(event: Bundle){
-        when(event.getString(RecomendationFeedEvent.action)){
+    private fun handleEvent(event: Bundle) {
+        when (event.getString(RecomendationFeedEvent.action)) {
             RecomendationFeedEvent.openFilmDetails -> {
-                Log.d("[MYLOG]", "open film #${event.getInt(RecomendationFeedEvent.filmIndex)} details ")
+                Log.d(
+                    "[MYLOG]",
+                    "open film #${event.getInt(RecomendationFeedEvent.filmIndex)} details "
+                )
+                (activity as FragmentManager).openFilmDetails()
             }
         }
     }

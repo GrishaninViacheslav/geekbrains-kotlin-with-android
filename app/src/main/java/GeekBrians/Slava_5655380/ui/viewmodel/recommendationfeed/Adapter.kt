@@ -1,7 +1,9 @@
-package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
+package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.R
+import GeekBrians.Slava_5655380.ui.Event
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -16,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.ui.PlayerView
 
 class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView.Adapter<Adapter.ViewHolder>() {
-    private val eventSource: MutableLiveData<Bundle> = MutableLiveData()
-    private val event: Bundle = Bundle()
+    private val eventSource: MutableLiveData<Event> = MutableLiveData()
+    private val eventContent: Bundle = Bundle()
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
         val v = LayoutInflater.from(viewGroup.context)
@@ -37,9 +39,10 @@ class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView
                 viewHolder.view.findViewById<PlayerView>(R.id.background_video).player = rvItemState.movieDataItem.trailer
 
                 viewHolder.view.findViewById<ImageView>(R.id.movie_poster).setOnClickListener {
-                    event.putString(RecomendationFeedEvent.action, RecomendationFeedEvent.openFilmDetails)
-                    event.putInt(RecomendationFeedEvent.filmIndex, rvItemState.movieDataItem.index)
-                    eventSource.value = event
+                    Log.d("[MYLOG]", "onClick")
+                    eventContent.putString(RecomendationFeedEvent.action, RecomendationFeedEvent.openFilmDetails)
+                    eventContent.putInt(RecomendationFeedEvent.filmIndex, rvItemState.movieDataItem.index)
+                    eventSource.value = Event(eventContent)
                 }
             }
             is RVItemState.Loading -> {

@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
+package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.domain.model.DebugRepository
 import GeekBrians.Slava_5655380.domain.MovieMetadata
@@ -87,6 +87,7 @@ class RecommendationFeedViewModel(
         l("fetchData fetchBottom: $fetchBottom")
         fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
+            // TODO: возможно стоит подождать завершения cropFeedBuffer
             cropFeedBuffer(fetchBottom)
         }
         if (fetchBottom) {
