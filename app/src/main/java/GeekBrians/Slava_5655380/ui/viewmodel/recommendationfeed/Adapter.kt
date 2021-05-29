@@ -40,8 +40,8 @@ class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView
 
                 viewHolder.view.findViewById<ImageView>(R.id.movie_poster).setOnClickListener {
                     Log.d("[MYLOG]", "onClick")
-                    eventContent.putString(RecomendationFeedEvent.action, RecomendationFeedEvent.openFilmDetails)
-                    eventContent.putInt(RecomendationFeedEvent.filmIndex, rvItemState.movieDataItem.index)
+                    eventContent.putString(RecommendationFeedEvent.action, RecommendationFeedEvent.openFilmDetails)
+                    eventContent.putInt(RecommendationFeedEvent.filmIndex, rvItemState.movieDataItem.index)
                     eventSource.value = Event(eventContent)
                 }
             }

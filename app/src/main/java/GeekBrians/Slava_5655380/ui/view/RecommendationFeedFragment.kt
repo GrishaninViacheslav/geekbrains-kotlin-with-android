@@ -2,7 +2,7 @@ package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
-import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecomendationFeedEvent
+import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
 import android.os.Bundle
 import android.util.Log
@@ -114,13 +114,14 @@ class RecommendationFeedFragment : Fragment() {
     }
 
     private fun handleEvent(event: Bundle) {
-        when (event.getString(RecomendationFeedEvent.action)) {
-            RecomendationFeedEvent.openFilmDetails -> {
+        when (event.getString(RecommendationFeedEvent.action)) {
+            RecommendationFeedEvent.openFilmDetails -> {
                 Log.d(
                     "[MYLOG]",
-                    "open film #${event.getInt(RecomendationFeedEvent.filmIndex)} details "
+                    "open film #${event.getInt(RecommendationFeedEvent.filmIndex)} details "
                 )
-                (activity as FragmentManager).openFilmDetails()
+                // TODO: как избежать использование каста?
+                (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
             }
         }
     }

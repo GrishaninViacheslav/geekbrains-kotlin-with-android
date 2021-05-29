@@ -8,6 +8,8 @@ import android.view.View
 import android.view.ViewGroup
 import GeekBrians.Slava_5655380.R
 import GeekBrians.Slava_5655380.ui.viewmodel.filmdetails.FilmDetailsViewModel
+import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
+import android.widget.TextView
 
 class FilmDetailsFragment : Fragment() {
 
@@ -21,7 +23,9 @@ class FilmDetailsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.film_details_fragment, container, false)
+        val view = inflater.inflate(R.layout.film_details_fragment, container, false)
+        view.findViewById<TextView>(R.id.localized_title).text = "${arguments?.getInt(RecommendationFeedEvent.filmIndex)}"
+        return view
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
