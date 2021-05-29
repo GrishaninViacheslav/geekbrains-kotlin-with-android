@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.ui.viewmodel.RecommendationFeed
+package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.domain.MovieMetadata
