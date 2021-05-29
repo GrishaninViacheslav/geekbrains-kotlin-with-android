@@ -30,6 +30,8 @@ class RecommendationFeedViewModel(
     private var bottomIsFetching: Boolean = false
     private var topIsFetching: Boolean = false
 
+    private val TAG = "[RFVM]"
+
     @Synchronized
     private fun fetchData(fetchBottom: Boolean) {
         fun fetchItemsToFeedBuffer() {
@@ -47,8 +49,10 @@ class RecommendationFeedViewModel(
                 fetchToIndex = firstItemIndex - 1
             }
             try {
+                l("fetchFromIndex: $fetchFromIndex, fetchToIndex: $fetchToIndex")
                 val fetchedData = repository.getRange(fetchFromIndex, fetchToIndex)
                 val successRVItemStateArray = toSuccessRVItemStateArray(fetchedData)
+                logRVItemStateArray(successRVItemStateArray, "successRVItemStateArray")
                 uiThreadHandler.post {
                     if (fetchBottom && feedBuffer[feedBuffer.size - 1] !is RVItemState.Success) {
                         feedBuffer.removeAt(feedBuffer.size - 1)
@@ -64,10 +68,13 @@ class RecommendationFeedViewModel(
                     } else {
                         feedBuffer.addAll(0, successRVItemStateArray.toCollection(ArrayList()))
                     }
+                    l("positionStart: ${if (fetchBottom) feedBuffer.size - fetchedData.size else 0}, itemCount: ${fetchedData.size}")
                     adapter.notifyItemRangeInserted(
                         if (fetchBottom) feedBuffer.size - fetchedData.size else 0,
                         fetchedData.size
                     )
+                    logRVItemStateArray(feedBuffer, "feedBuffer")
+
                 }
                 feedState.postValue(AppState.Success)
             } catch (e: Throwable) {
@@ -76,6 +83,7 @@ class RecommendationFeedViewModel(
             }
         }
 
+        l("fetchData fetchBottom: $fetchBottom")
         fetchItemsToFeedBuffer()
         if (feedBuffer.size > feedBufferMaxSize) {
             cropFeedBuffer(fetchBottom)
@@ -88,6 +96,7 @@ class RecommendationFeedViewModel(
     }
 
     private fun cropFeedBuffer(cropBottom: Boolean) {
+        l("cropFeedBuffer cropBottom: $cropBottom")
         var cropFromIndex: Int
         var cropToIndex: Int
         if (cropBottom) {
@@ -109,18 +118,21 @@ class RecommendationFeedViewModel(
         }
 
         uiThreadHandler.post {
+            l("cropFromIndex: $cropFromIndex, cropToIndex: $cropToIndex")
             feedBuffer.subList(cropFromIndex, cropToIndex)
                 .forEach {
                     // TODO: разобраться почему здесь может быть RVItemState.Loading
-                    if(it is RVItemState.Success){
+                    if (it is RVItemState.Success) {
                         (it as RVItemState.Success).movieDataItem.trailer.release()
                     }
                 }
             feedBuffer.subList(cropFromIndex, cropToIndex).clear()
+            l("positionStart: $cropFromIndex, itemCount: ${cropToIndex - cropFromIndex}")
             adapter.notifyItemRangeRemoved(
                 cropFromIndex,
                 cropToIndex - cropFromIndex
             )
+            logRVItemStateArray(feedBuffer, "croppedFeedBuffer")
         }
     }
 
@@ -156,6 +168,38 @@ class RecommendationFeedViewModel(
             }
         }
     }
+
+
+    // TODO: как перегрузить эти функции чтобы измежать дублирования?
+    private fun logRVItemStateArray(arr: ArrayList<RVItemState>, name: String){
+        var msg = "$name[ "
+        for(el in arr){
+            msg += when(el){
+                is RVItemState.Success -> "${el.movieDataItem.index} "
+                RVItemState.Loading -> " L "
+            }
+        }
+        msg += "]"
+        l(msg)
+    }
+
+    private fun logRVItemStateArray(arr: Array<RVItemState>, name: String){
+        var msg = "$name[ "
+        for(el in arr){
+            msg += when(el){
+                is RVItemState.Success -> "${el.movieDataItem.index} "
+                RVItemState.Loading -> " L "
+            }
+        }
+        msg += "]"
+        l(msg)
+    }
+
+    private fun l(msg: String){
+        Log.d(TAG, msg)
+    }
+
+
 
     var adapter: Adapter = Adapter(this)
 
