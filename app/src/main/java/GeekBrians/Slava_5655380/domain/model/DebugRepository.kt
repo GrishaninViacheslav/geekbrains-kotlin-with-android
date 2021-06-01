@@ -80,13 +80,14 @@ class DebugRepository : Repository {
         MovieMetadata(17, "17 movie", "17 movie original title", "Lorem ipsum dolor sit amet")
     )
 
-    val fetchingDelay = 1000L
+    private val fetchingDelay = 1000L
+    private val isThrowingErrors = false
 
     override fun getRange(fromIndex: Int, toIndex: Int): Array<MovieMetadata> {
         Thread.sleep(fetchingDelay)
 
-        if(fromIndex > 7 && Random.nextBoolean()){
-            //throw Throwable("Ошибка загрузки")
+        if (isThrowingErrors && fromIndex > 7 && Random.nextBoolean()) {
+            throw Throwable("Ошибка загрузки")
         }
 
         if (fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
