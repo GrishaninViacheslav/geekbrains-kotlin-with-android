@@ -4,7 +4,6 @@ import GeekBrians.Slava_5655380.R
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentTransaction
 
 class MainActivity : AppCompatActivity(), FragmentManager {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,14 +21,15 @@ class MainActivity : AppCompatActivity(), FragmentManager {
     }
 
     override fun openFilmDetails(index: Int) {
-        val fragmentTransaction: FragmentTransaction = supportFragmentManager.beginTransaction()
-        val fragment = FilmDetailsFragment.newInstance()
-        val args = Bundle()
-        args.putInt(RecommendationFeedEvent.filmIndex, index)
-        fragment.arguments = args
-        fragmentTransaction.replace(R.id.container, fragment)
-        fragmentTransaction.addToBackStack(null)
-        fragmentTransaction.commit()
+        with(supportFragmentManager.beginTransaction()) {
+            replace(
+                R.id.container,
+                FilmDetailsFragment.newInstance().apply {
+                    arguments = Bundle().apply { putInt(RecommendationFeedEvent.filmIndex, index) }
+                })
+            addToBackStack(null)
+            commit()
+        }
     }
 }
 

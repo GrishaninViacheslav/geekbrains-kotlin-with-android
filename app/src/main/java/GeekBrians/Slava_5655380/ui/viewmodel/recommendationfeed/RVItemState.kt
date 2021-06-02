@@ -10,32 +10,28 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 
 sealed class RVItemState {
     class Success(movieMetadata: MovieMetadata) : RVItemState() {
-        val movieDataItem: MovieDataItem
-
-        init {
+        val movieDataItem: MovieDataItem = MovieDataItem(
+            index = movieMetadata.index,
+            localizedTitle = movieMetadata.localizedTitle,
+            description = movieMetadata.description,
+            genres = arrayOf("sci-fi", "horror"),
+            director = "Режисёр Режисёрович",
+            screenwriter = "Сценарист Сценаристович",
             // TODO: сделать что-то вроде пула плееров размер которого был бы равен feedBuffer.size,
             //             чтобы плееры можно было переиспользовать назначая им новый MediaItem,
             //             вместо создания новго плеера
-            val trailer: SimpleExoPlayer = SimpleExoPlayer.Builder(App.context!!).build()
-            val mediaItem: MediaItem = MediaItem.fromUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4")
-            Handler(Looper.getMainLooper()).post{
-                trailer.setMediaItem(mediaItem)
-                trailer.volume = 0f
-                trailer.repeatMode = Player.REPEAT_MODE_ONE
-                trailer.playWhenReady = true
-                trailer.seekTo(0, 0)
-                trailer.prepare()
+            trailer = SimpleExoPlayer.Builder(App.context!!).build().apply {
+                Handler(Looper.getMainLooper()).post {
+                    setMediaItem(MediaItem.fromUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4"))
+                    volume = 0f
+                    repeatMode = Player.REPEAT_MODE_ONE
+                    playWhenReady = true
+                    seekTo(0, 0)
+                    prepare()
+                }
             }
-            this.movieDataItem = MovieDataItem(
-                index = movieMetadata.index,
-                localizedTitle = movieMetadata.localizedTitle,
-                description = movieMetadata.description,
-                genres = arrayOf("sci-fi", "horror"),
-                director = "Режисёр Режисёрович",
-                screenwriter = "Сценарист Сценаристович",
-                trailer = trailer
-            )
-        }
+        )
     }
+
     object Loading : RVItemState()
 }

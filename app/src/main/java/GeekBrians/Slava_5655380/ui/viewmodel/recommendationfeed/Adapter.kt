@@ -17,51 +17,52 @@ class Adapter(
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
     private fun openFilmDetails(index: Int) {
-        val eventContent = Bundle()
-        eventContent.putString(
-            RecommendationFeedEvent.action,
-            RecommendationFeedEvent.openFilmDetails
-        )
-        eventContent.putInt(
-            RecommendationFeedEvent.filmIndex,
-            index
-        )
-        eventSource.value = Event(eventContent)
+        eventSource.value = Event(Bundle().apply {
+            putString(
+                RecommendationFeedEvent.action,
+                RecommendationFeedEvent.openFilmDetails
+            )
+            putInt(
+                RecommendationFeedEvent.filmIndex,
+                index
+            )
+        })
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
-        val binding = ItemBinding.inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
-        return ViewHolder(binding)
-    }
+    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int) = ViewHolder(
+        ItemBinding.inflate(
+            LayoutInflater.from(viewGroup.context),
+            viewGroup,
+            false
+        )
+    )
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        with(viewHolder) {
+        with(viewHolder.binding) {
             when (val rvItemState = viewModel.getItem(i)) {
                 is RVItemState.Success -> {
-                    binding.backgroundVideo.visibility = VISIBLE
-                    binding.moviePoster.visibility = VISIBLE
-                    binding.localizedTitle.visibility = VISIBLE
-                    binding.progressBar.visibility = GONE
+                    backgroundVideo.visibility = VISIBLE
+                    moviePoster.visibility = VISIBLE
+                    localizedTitle.visibility = VISIBLE
+                    progressBar.visibility = GONE
 
-                    binding.localizedTitle.text =
+                    localizedTitle.text =
                         rvItemState.movieDataItem.index.toString()
-                    binding.backgroundVideo.player = rvItemState.movieDataItem.trailer
+                    backgroundVideo.player = rvItemState.movieDataItem.trailer
 
-                    binding.moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
+                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
                 }
                 is RVItemState.Loading -> {
-                    binding.backgroundVideo.visibility = GONE
-                    binding.moviePoster.visibility = GONE
-                    binding.localizedTitle.visibility = GONE
-                    binding.progressBar.visibility = VISIBLE
+                    backgroundVideo.visibility = GONE
+                    moviePoster.visibility = GONE
+                    localizedTitle.visibility = GONE
+                    progressBar.visibility = VISIBLE
                 }
             }
         }
     }
 
-    override fun getItemCount(): Int {
-        return viewModel.getItemCount()
-    }
+    override fun getItemCount() = viewModel.getItemCount()
 
     fun getEventSource() = eventSource
 

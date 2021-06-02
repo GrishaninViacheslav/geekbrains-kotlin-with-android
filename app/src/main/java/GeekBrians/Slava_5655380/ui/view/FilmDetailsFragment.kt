@@ -19,7 +19,11 @@ class FilmDetailsFragment : Fragment() {
         fun newInstance() = FilmDetailsFragment()
     }
 
-    private lateinit var viewModel: FilmDetailsViewModel
+    private val viewModel: FilmDetailsViewModel by lazy {
+        ViewModelProvider(this).get(
+            FilmDetailsViewModel::class.java
+        )
+    }
 
     private var _binding: FilmDetailsFragmentBinding? = null
     private val binding get() = _binding!!
@@ -31,10 +35,5 @@ class FilmDetailsFragment : Fragment() {
         _binding = FilmDetailsFragmentBinding.inflate(inflater, container, false)
         binding.localizedTitle.text = "${arguments?.getInt(RecommendationFeedEvent.filmIndex)}"
         return binding.root
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(FilmDetailsViewModel::class.java)
     }
 }
