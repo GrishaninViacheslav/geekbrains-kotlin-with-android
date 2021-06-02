@@ -5,6 +5,7 @@ import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -72,10 +73,6 @@ class RecommendationFeedFragment : Fragment() {
     private val viewModel: RecommendationFeedViewModel by lazy {
         ViewModelProvider(this).get(RecommendationFeedViewModel::class.java).apply {
             getFeedState().observe(viewLifecycleOwner, ::renderFeedState)
-            adapter.getEventSource()
-                .observe(viewLifecycleOwner) { event ->
-                    event.getContentIfNotHandled()?.let { handleEvent(it) }
-                }
             feed(true)
         }
     }
@@ -111,7 +108,13 @@ class RecommendationFeedFragment : Fragment() {
     ): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false).apply {
             recyclerViewLines.layoutManager = LinearLayoutManager(context)
-            recyclerViewLines.adapter = viewModel.adapter
+            recyclerViewLines.adapter = viewModel.adapter.apply {
+                getEventSource()
+                    .observe(viewLifecycleOwner) { event ->
+                        Log.d("[MYLOG]", "handleEvent");
+                        event.getContentIfNotHandled()?.let {  handleEvent(it) }
+                    }
+            }
             recyclerViewLines.addOnScrollListener(FeedScrollListener())
         }
         return binding.root

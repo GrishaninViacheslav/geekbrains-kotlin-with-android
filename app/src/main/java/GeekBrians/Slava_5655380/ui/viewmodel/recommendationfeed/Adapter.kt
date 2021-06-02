@@ -3,6 +3,7 @@ package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 import GeekBrians.Slava_5655380.databinding.ItemBinding
 import GeekBrians.Slava_5655380.ui.Event
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -27,6 +28,7 @@ class Adapter(
             index
         )
         eventSource.value = Event(eventContent)
+        Log.d("[MYLOG]", "eventSource.value: ${eventSource.value}")
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
