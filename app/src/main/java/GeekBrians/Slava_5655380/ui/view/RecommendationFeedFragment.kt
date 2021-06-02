@@ -72,10 +72,6 @@ class RecommendationFeedFragment : Fragment() {
     private val viewModel: RecommendationFeedViewModel by lazy {
         ViewModelProvider(this).get(RecommendationFeedViewModel::class.java).apply {
             getFeedState().observe(viewLifecycleOwner, ::renderFeedState)
-            adapter.getEventSource()
-                .observe(viewLifecycleOwner) { event ->
-                    event.getContentIfNotHandled()?.let { handleEvent(it) }
-                }
             feed(true)
         }
     }
@@ -111,7 +107,12 @@ class RecommendationFeedFragment : Fragment() {
     ): View {
         _binding = MainFragmentBinding.inflate(inflater, container, false).apply {
             recyclerViewLines.layoutManager = LinearLayoutManager(context)
-            recyclerViewLines.adapter = viewModel.adapter
+            recyclerViewLines.adapter = viewModel.adapter.apply {
+                getEventSource()
+                    .observe(viewLifecycleOwner) { event ->
+                        event.getContentIfNotHandled()?.let { handleEvent(it) }
+                    }
+            }
             recyclerViewLines.addOnScrollListener(FeedScrollListener())
         }
         return binding.root
