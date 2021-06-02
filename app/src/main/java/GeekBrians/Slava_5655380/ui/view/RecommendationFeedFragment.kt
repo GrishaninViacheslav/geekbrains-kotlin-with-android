@@ -5,98 +5,84 @@ import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.*
 
 class RecommendationFeedFragment : Fragment() {
+    // TODO: как сделать object из FeedScrollListener?
+    //             Если просто заменить inner class на object, то тогда FeedScrollListener
+    //             не будет иметь доступ к необходимым ему полям RecommendationFeedFragment
+    private inner class FeedScrollListener : RecyclerView.OnScrollListener() {
+        private var scrollState = SCROLL_STATE_SETTLING
+        private var lastDy = 0
+
+        // TODO: проконтролировать, чтобы значение feedNecessityThreshold
+        //             не был слишком большим, то есть таким при котором
+        //             постоянно вызывались бы feed для обоих концов ленты
+        private val feedNecessityThreshold = 3
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            scrollState = newState
+            if (newState == SCROLL_STATE_IDLE) {
+                with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
+                    if (lastDy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                        viewModel.feed(true)
+                    }
+                    if (lastDy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {
+                        viewModel.feed(false)
+                    }
+                }
+            }
+        }
+
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            super.onScrolled(recyclerView, dx, dy)
+            lastDy = dy
+            if (dx == 0 && dy == 0) {
+                if (!recyclerView.canScrollVertically(1)) {
+                    viewModel.feed(true)
+                }
+            }
+            if (scrollState == SCROLL_STATE_DRAGGING) {
+                with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
+                    if (dy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                        viewModel.feed(true)
+                    }
+                    if (dy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {
+                        viewModel.feed(false)
+                    }
+                }
+            }
+        }
+    }
 
     companion object {
         fun newInstance() = RecommendationFeedFragment()
     }
 
-    private lateinit var viewModel: RecommendationFeedViewModel
+    private val viewModel: RecommendationFeedViewModel by lazy {
+        ViewModelProvider(this).get(RecommendationFeedViewModel::class.java).apply {
+            getFeedState().observe(viewLifecycleOwner, ::renderFeedState)
+            adapter.getEventSource()
+                .observe(viewLifecycleOwner) { event ->
+                    event.getContentIfNotHandled()?.let { handleEvent(it) }
+                }
+            feed(true)
+        }
+    }
 
+    // TODO: Можно ли это упростить, например заменить делегатом?
     private var _binding: MainFragmentBinding? = null
     private val binding get() = _binding!!
-
-    private fun setupBindings(
-        inflater: LayoutInflater, container: ViewGroup?
-    ) {
-        _binding = MainFragmentBinding.inflate(inflater, container, false)
-        viewModel = ViewModelProvider(this).get(RecommendationFeedViewModel::class.java)
-        viewModel.getFeedState().observe(viewLifecycleOwner, Observer { renderFeedState(it) })
-        binding.recyclerViewLines.setHasFixedSize(false)
-        val layoutManager = LinearLayoutManager(context)
-        binding.recyclerViewLines.layoutManager = layoutManager
-        binding.recyclerViewLines.itemAnimator =
-            null // https://stackoverflow.com/questions/35653439/recycler-view-inconsistency-detected-invalid-view-holder-adapter-positionviewh
-        //viewModel.adapter.setHasStableIds(false)
-        Log.d("[MYLOG]", "setupBindings observe")
-        viewModel.adapter.getEventSource().observe(
-            viewLifecycleOwner,
-            Observer {
-                Log.d("[MYLOG]", "handleEvent");
-                val event: Bundle? = it.getContentIfNotHandled()
-                if(event != null){
-                    handleEvent(event)
-                }
-            })
-        binding.recyclerViewLines.adapter = viewModel.adapter
-
-
-        viewModel.feed(true)
-
-        binding.recyclerViewLines.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            private var scrollState = SCROLL_STATE_SETTLING
-            private var lastDy = 0
-            private val feedNecessityThreshold = 3
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                super.onScrollStateChanged(recyclerView, newState)
-                scrollState = newState
-                if (newState == SCROLL_STATE_IDLE) {
-                    if (lastDy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
-                        viewModel.feed(true)
-                    }
-                    if (lastDy < 0 && layoutManager.findFirstVisibleItemPosition() < feedNecessityThreshold) {
-                        viewModel.feed(false)
-                    }
-                }
-
-            }
-
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                lastDy = dy
-                if (dx == 0 && dy == 0) {
-                    if (!recyclerView.canScrollVertically(1)) {
-                        viewModel.feed(true)
-                    }
-                }
-                if (scrollState == SCROLL_STATE_DRAGGING) {
-                    // TODO: проконтролировать, чтобы значение feedNecessityThreshold
-                    //             не был слишком большим, то есть таким при котором
-                    //             постоянно вызывались бы feed для обоих концов ленты
-                    if (dy > 0 && layoutManager.findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
-                        viewModel.feed(true)
-                    }
-                    if (dy < 0 && layoutManager.findFirstVisibleItemPosition() < feedNecessityThreshold) {
-                        viewModel.feed(false)
-                    }
-                }
-            }
-        })
-    }
 
     private fun renderFeedState(feedState: AppState) {
         when (feedState) {
@@ -107,19 +93,12 @@ class RecommendationFeedFragment : Fragment() {
                 binding.errorTextView.visibility = VISIBLE
                 binding.errorTextView.text = feedState.error.message
             }
-            AppState.Loading -> {
-
-            }
         }
     }
 
     private fun handleEvent(event: Bundle) {
         when (event.getString(RecommendationFeedEvent.action)) {
             RecommendationFeedEvent.openFilmDetails -> {
-                Log.d(
-                    "[MYLOG]",
-                    "open film #${event.getInt(RecommendationFeedEvent.filmIndex)} details "
-                )
                 // TODO: как избежать использование каста?
                 (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
             }
@@ -130,7 +109,11 @@ class RecommendationFeedFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        setupBindings(inflater, container)
+        _binding = MainFragmentBinding.inflate(inflater, container, false).apply {
+            recyclerViewLines.layoutManager = LinearLayoutManager(context)
+            recyclerViewLines.adapter = viewModel.adapter
+            recyclerViewLines.addOnScrollListener(FeedScrollListener())
+        }
         return binding.root
     }
 }
