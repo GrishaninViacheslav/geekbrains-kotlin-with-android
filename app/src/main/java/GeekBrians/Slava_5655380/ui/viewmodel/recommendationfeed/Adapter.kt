@@ -1,68 +1,70 @@
 package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
-import GeekBrians.Slava_5655380.R
+import GeekBrians.Slava_5655380.databinding.ItemBinding
 import GeekBrians.Slava_5655380.ui.Event
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.ui.PlayerView
 
-class Adapter(private val viewModel: RecommendationFeedViewModel) : RecyclerView.Adapter<Adapter.ViewHolder>() {
+class Adapter(
+    private val viewModel: RecommendationFeedViewModel,
     private val eventSource: MutableLiveData<Event> = MutableLiveData()
-    private val eventContent: Bundle = Bundle()
+) :
+    RecyclerView.Adapter<Adapter.ViewHolder>() {
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ViewHolder {
-        val v = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.item, viewGroup, false)
-        return ViewHolder(v)
+    private fun openFilmDetails(index: Int) {
+        eventSource.value = Event(Bundle().apply {
+            putString(
+                RecommendationFeedEvent.action,
+                RecommendationFeedEvent.openFilmDetails
+            )
+            putInt(
+                RecommendationFeedEvent.filmIndex,
+                index
+            )
+        })
     }
+
+    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int) = ViewHolder(
+        ItemBinding.inflate(
+            LayoutInflater.from(viewGroup.context),
+            viewGroup,
+            false
+        )
+    )
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        when(val rvItemState = viewModel.getItem(i)){
-            is RVItemState.Success -> {
-                viewHolder.view.findViewById<PlayerView>(R.id.background_video).visibility = VISIBLE
-                viewHolder.view.findViewById<ImageView>(R.id.movie_poster).visibility = VISIBLE
-                viewHolder.view.findViewById<TextView>(R.id.localized_title).visibility = VISIBLE
-                viewHolder.view.findViewById<ProgressBar>(R.id.progress_bar).visibility = GONE
+        with(viewHolder.binding) {
+            when (val rvItemState = viewModel.getItem(i)) {
+                is RVItemState.Success -> {
+                    backgroundVideo.visibility = VISIBLE
+                    moviePoster.visibility = VISIBLE
+                    localizedTitle.visibility = VISIBLE
+                    progressBar.visibility = GONE
 
-                viewHolder.view.findViewById<TextView>(R.id.localized_title).text = rvItemState.movieDataItem.index.toString()
-                viewHolder.view.findViewById<PlayerView>(R.id.background_video).player = rvItemState.movieDataItem.trailer
+                    localizedTitle.text =
+                        rvItemState.movieDataItem.index.toString()
+                    backgroundVideo.player = rvItemState.movieDataItem.trailer
 
-                viewHolder.view.findViewById<ImageView>(R.id.movie_poster).setOnClickListener {
-                    Log.d("[MYLOG]", "onClick")
-                    eventContent.putString(RecommendationFeedEvent.action, RecommendationFeedEvent.openFilmDetails)
-                    eventContent.putInt(RecommendationFeedEvent.filmIndex, rvItemState.movieDataItem.index)
-                    eventSource.value = Event(eventContent)
+                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
+                }
+                is RVItemState.Loading -> {
+                    backgroundVideo.visibility = GONE
+                    moviePoster.visibility = GONE
+                    localizedTitle.visibility = GONE
+                    progressBar.visibility = VISIBLE
                 }
             }
-            is RVItemState.Loading -> {
-                viewHolder.view.findViewById<PlayerView>(R.id.background_video).visibility = GONE
-                viewHolder.view.findViewById<ImageView>(R.id.movie_poster).visibility = GONE
-                viewHolder.view.findViewById<TextView>(R.id.localized_title).visibility = GONE
-                viewHolder.view.findViewById<ProgressBar>(R.id.progress_bar).visibility = VISIBLE
-            }
-
         }
-
     }
 
-    override fun getItemCount(): Int {
-        return viewModel.getItemCount()
-    }
+    override fun getItemCount() = viewModel.getItemCount()
 
     fun getEventSource() = eventSource
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val view: ConstraintLayout = itemView as ConstraintLayout
-    }
+    inner class ViewHolder(val binding: ItemBinding) : RecyclerView.ViewHolder(binding.root)
 }

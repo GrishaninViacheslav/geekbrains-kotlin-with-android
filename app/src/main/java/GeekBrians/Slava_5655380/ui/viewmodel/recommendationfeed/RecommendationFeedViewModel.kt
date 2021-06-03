@@ -173,10 +173,10 @@ class RecommendationFeedViewModel(
 
 
     // TODO: как перегрузить эти функции чтобы измежать дублирования?
-    private fun logRVItemStateArray(arr: ArrayList<RVItemState>, name: String){
+    private fun logRVItemStateArray(arr: ArrayList<RVItemState>, name: String) {
         var msg = "$name[ "
-        for(el in arr){
-            msg += when(el){
+        for (el in arr) {
+            msg += when (el) {
                 is RVItemState.Success -> "${el.movieDataItem.index} "
                 RVItemState.Loading -> " L "
             }
@@ -185,10 +185,10 @@ class RecommendationFeedViewModel(
         l(msg)
     }
 
-    private fun logRVItemStateArray(arr: Array<RVItemState>, name: String){
+    private fun logRVItemStateArray(arr: Array<RVItemState>, name: String) {
         var msg = "$name[ "
-        for(el in arr){
-            msg += when(el){
+        for (el in arr) {
+            msg += when (el) {
                 is RVItemState.Success -> "${el.movieDataItem.index} "
                 RVItemState.Loading -> " L "
             }
@@ -197,10 +197,9 @@ class RecommendationFeedViewModel(
         l(msg)
     }
 
-    private fun l(msg: String){
+    private fun l(msg: String) {
         Log.d(TAG, msg)
     }
-
 
 
     var adapter: Adapter = Adapter(this)
@@ -224,13 +223,9 @@ class RecommendationFeedViewModel(
         }
     }
 
-    fun getItemCount(): Int {
-        return feedBuffer.size
-    }
+    fun getItemCount() = feedBuffer.size
 
-    fun getItem(index: Int): RVItemState {
-        return feedBuffer[index]
-    }
+    fun getItem(index: Int) = feedBuffer[index]
 
     fun getFeedState() = feedState
 }
