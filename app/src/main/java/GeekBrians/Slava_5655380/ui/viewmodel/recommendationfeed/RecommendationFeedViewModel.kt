@@ -34,7 +34,7 @@ class RecommendationFeedViewModel(
     @Synchronized
     private fun fetchData(fetchBottom: Boolean) {
         fun fetchItemsToFeedBuffer() {
-            fun toSuccessRVItemStateArray(input: Array<MovieMetadata>): Array<RVItemState> {
+            fun toSuccessRVItemStateArray(input: List<MovieMetadata>): Array<RVItemState> {
                 return Array<RVItemState>(input.size) { i -> RVItemState.Success(input[i]) }
             }
             cdl.await()

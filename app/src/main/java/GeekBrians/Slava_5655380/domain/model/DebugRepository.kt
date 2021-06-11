@@ -4,7 +4,7 @@ import GeekBrians.Slava_5655380.domain.MovieMetadata
 import kotlin.random.Random
 
 class DebugRepository : Repository {
-    private val data = arrayOf(
+    private val data = listOf(
         MovieMetadata(
             0,
             "Zero movie",
@@ -83,16 +83,16 @@ class DebugRepository : Repository {
     private val fetchingDelay = 1000L
     private val isThrowingErrors = false
 
-    override fun getRange(fromIndex: Int, toIndex: Int): Array<MovieMetadata> {
+    override fun getRange(fromIndex: Int, toIndex: Int): List<MovieMetadata> {
         Thread.sleep(fetchingDelay)
 
         if (isThrowingErrors && fromIndex > 7 && Random.nextBoolean()) {
             throw Throwable("Ошибка загрузки")
         }
 
-        if (fromIndex > data.size - 1 || toIndex < 0) return arrayOf()
+        if (fromIndex > data.size - 1 || toIndex < 0) return listOf()
         val begin = if (fromIndex < 0) 0 else fromIndex
         val end = if (toIndex > data.size - 1) data.size else toIndex + 1
-        return data.copyOfRange(begin, end)
+        return data.subList(begin, end)
     }
 }

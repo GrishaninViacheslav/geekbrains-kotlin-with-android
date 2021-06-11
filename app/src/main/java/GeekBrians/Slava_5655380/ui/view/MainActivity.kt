@@ -1,8 +1,11 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.R
+import GeekBrians.Slava_5655380.domain.MovieMetadata
+import GeekBrians.Slava_5655380.domain.model.tmdbrepository.TMDBRepository
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity(), FragmentManager {
@@ -10,7 +13,12 @@ class MainActivity : AppCompatActivity(), FragmentManager {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
-            openRecommendationFeed()
+            //openRecommendationFeed()
+            Thread {
+                val rep = TMDBRepository()
+                val arr: List<MovieMetadata> = rep.getRange(40, 41)
+                Log.d("[MYLOG]", "arr: $arr")
+            }.start()
         }
     }
 
