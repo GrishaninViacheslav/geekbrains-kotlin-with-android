@@ -2,9 +2,11 @@ package GeekBrians.Slava_5655380.domain.model.tmdbrepository
 
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
-import android.util.Log
 
 class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
+    private val MIN_INDEX = 0;
+    private val MAX_INDEX = 20000;
+
     private fun toMovieMetadataArray(
         tmdbDTOsArray: ArrayList<TmdbDTOResult>,
         pageFirstEllIndex: Int
@@ -16,10 +18,20 @@ class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
         })
     }
 
-
     override fun getRange(fromIndex: Int, toIndex: Int): List<MovieMetadata> {
-        val fromPage = loader.findPageIndex(fromIndex)
-        val toPage = loader.findPageIndex(toIndex)
+        var croppedFromIndex = fromIndex;
+        var croppedToIndex = toIndex;
+        if (croppedToIndex < MIN_INDEX || croppedFromIndex > MAX_INDEX) {
+            return listOf();
+        }
+        if (croppedFromIndex < MIN_INDEX) {
+            croppedFromIndex = MIN_INDEX;
+        }
+        if (croppedToIndex > MAX_INDEX) {
+            croppedToIndex = MAX_INDEX;
+        }
+        val fromPage = loader.findPageIndex(croppedFromIndex)
+        val toPage = loader.findPageIndex(croppedToIndex)
         // Разделение на TMDBDTO и MovieMetadata так как в дальнеёшем,
         // в MovieMetadata будут поля значения которых нужно будет
         // получать из других баз данных, так как их не найти в TMDBD
@@ -27,13 +39,9 @@ class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
         for (i in fromPage..toPage) {
             tmdbDTOsResults.addAll(loader.load(i).results)
         }
-        Log.d("[MYLOG]", "fromPage: $fromPage, toPage: $toPage")
-        Log.d("[MYLOG]", "tmdbDTOsResults.size: ${tmdbDTOsResults.size}")
-        Log.d("[MYLOG]", "tmdbDTOsResults: $tmdbDTOsResults")
-        Log.d("[MYLOG]", "fromIndex: ${fromIndex % loader.resultLength}, toIndex: ${(toIndex % loader.resultLength) + (toPage - fromPage)*loader.resultLength + 1}")
         return toMovieMetadataArray(tmdbDTOsResults, (fromPage - 1) * loader.resultLength).subList(
-            fromIndex % loader.resultLength,
-            (toIndex % loader.resultLength) + (toPage - fromPage)*loader.resultLength + 1
+            croppedFromIndex % loader.resultLength,
+            (croppedToIndex % loader.resultLength) + (toPage - fromPage) * loader.resultLength + 1
         )
     }
 }

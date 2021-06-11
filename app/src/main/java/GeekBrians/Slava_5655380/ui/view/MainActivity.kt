@@ -13,12 +13,7 @@ class MainActivity : AppCompatActivity(), FragmentManager {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
         if (savedInstanceState == null) {
-            //openRecommendationFeed()
-            Thread {
-                val rep = TMDBRepository()
-                val arr: List<MovieMetadata> = rep.getRange(40, 41)
-                Log.d("[MYLOG]", "arr: $arr")
-            }.start()
+            openRecommendationFeed()
         }
     }
 

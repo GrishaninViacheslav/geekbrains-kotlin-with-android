@@ -3,6 +3,7 @@ package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 import GeekBrians.Slava_5655380.domain.model.DebugRepository
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
+import GeekBrians.Slava_5655380.domain.model.tmdbrepository.TMDBRepository
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -18,7 +19,7 @@ import kotlin.collections.ArrayList
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
-    private val repository: Repository = DebugRepository(),
+    private val repository: Repository = TMDBRepository(),
     private val numberOfBufferingItems: Int = 2,
     private val feedBufferMaxSize: Int = 12 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),

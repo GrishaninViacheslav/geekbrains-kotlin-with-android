@@ -12,7 +12,7 @@ sealed class RVItemState {
     class Success(movieMetadata: MovieMetadata) : RVItemState() {
         val movieDataItem: MovieDataItem = MovieDataItem(
             index = movieMetadata.index,
-            localizedTitle = movieMetadata.localizedTitle,
+            localizedTitle = movieMetadata.originalTitle,
             description = movieMetadata.description,
             genres = arrayOf("sci-fi", "horror"),
             director = "Режисёр Режисёрович",
