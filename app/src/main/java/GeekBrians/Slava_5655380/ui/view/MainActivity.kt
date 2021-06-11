@@ -1,11 +1,8 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.R
-import GeekBrians.Slava_5655380.domain.MovieMetadata
-import GeekBrians.Slava_5655380.domain.model.tmdbrepository.TMDBRepository
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity(), FragmentManager {
