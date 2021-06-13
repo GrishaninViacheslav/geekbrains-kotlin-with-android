@@ -49,6 +49,7 @@ class Adapter(
                     localizedTitle.text =
                         rvItemState.movieDataItem.localizedTitle
                     backgroundVideo.player = rvItemState.movieDataItem.trailer
+                    rvItemState.movieDataItem.poster?.into(moviePoster)
 
                     moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
                 }

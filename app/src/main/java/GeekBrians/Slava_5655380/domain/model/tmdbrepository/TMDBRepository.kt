@@ -14,6 +14,8 @@ class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
         addAll(Array<MovieMetadata>(tmdbDTOsArray.size) { i ->
             MovieMetadata(index = pageFirstEllIndex + i).apply {
                 originalTitle = tmdbDTOsArray[i].original_title
+                posterUri =
+                    if (tmdbDTOsArray[i].poster_path != "") tmdbDTOsArray[i].poster_path else null
             }
         })
     }
