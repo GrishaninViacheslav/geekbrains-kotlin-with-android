@@ -47,7 +47,7 @@ class Adapter(
                     progressBar.visibility = GONE
 
                     localizedTitle.text =
-                        rvItemState.movieDataItem.index.toString()
+                        rvItemState.movieDataItem.localizedTitle
                     backgroundVideo.player = rvItemState.movieDataItem.trailer
 
                     moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
