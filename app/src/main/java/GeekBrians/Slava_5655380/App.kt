@@ -1,17 +1,34 @@
 package GeekBrians.Slava_5655380
 
 import android.app.Application
-import android.content.Context
+import java.lang.Exception
 
-// https://stackoverflow.com/questions/9445661/how-to-get-the-context-from-anywhere
 class App : Application() {
     companion object {
-        var instance: App? = null
-            private set
+        private var _instance: App? = null
+        val instance: App
+            get() = _instance ?: throw Exception("Can not provide application instance")
+    }
+
+    val settings: Settings by lazy {
+        Settings(
+            instance.getSharedPreferences(
+                Settings.PREFERENCES_NAME,
+                MODE_PRIVATE
+            ).getBoolean(Settings.SHOW_ADULT_CONTENT_VALUE_KEY, false)
+
+        )
     }
 
     override fun onCreate() {
-        instance = this
+        _instance = this
         super.onCreate()
+    }
+}
+
+data class Settings(var showAdultContent: Boolean) {
+    companion object {
+        val PREFERENCES_NAME: String = "SETTINGS"
+        val SHOW_ADULT_CONTENT_VALUE_KEY = "SHOW_ADULT_CONTENT_VALUE"
     }
 }

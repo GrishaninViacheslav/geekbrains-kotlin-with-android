@@ -26,7 +26,7 @@ sealed class RVItemState {
             // TODO: сделать что-то вроде пула плееров размер которого был бы равен feedBuffer.size,
             //             чтобы плееры можно было переиспользовать назначая им новый MediaItem,
             //             вместо создания новго плеера
-            trailer = SimpleExoPlayer.Builder(App.instance!!).build().apply {
+            trailer = SimpleExoPlayer.Builder(App.instance).build().apply {
                 Handler(Looper.getMainLooper()).post {
                     setMediaItem(MediaItem.fromUri("https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4"))
                     volume = 0f
