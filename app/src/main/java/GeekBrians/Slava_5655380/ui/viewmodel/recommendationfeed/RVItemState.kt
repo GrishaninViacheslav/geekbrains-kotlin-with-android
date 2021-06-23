@@ -16,6 +16,7 @@ sealed class RVItemState {
         }
 
         val movieDataItem: MovieDataItem = MovieDataItem(
+            id = movieMetadata.id,
             index = movieMetadata.index,
             localizedTitle = movieMetadata.originalTitle,
             description = movieMetadata.description,

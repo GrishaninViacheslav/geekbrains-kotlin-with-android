@@ -4,6 +4,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.squareup.picasso.RequestCreator
 
 data class MovieDataItem(
+    val id: String,
     val index: Int,
     val localizedTitle: String?,
     val description: String?,

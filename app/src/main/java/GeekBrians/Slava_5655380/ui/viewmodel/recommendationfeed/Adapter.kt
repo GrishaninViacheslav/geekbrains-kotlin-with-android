@@ -16,15 +16,15 @@ class Adapter(
 ) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
-    private fun openFilmDetails(index: Int) {
+    private fun openFilmDetails(id: String) {
         eventSource.value = Event(Bundle().apply {
             putString(
                 RecommendationFeedEvent.action,
                 RecommendationFeedEvent.openFilmDetails
             )
-            putInt(
-                RecommendationFeedEvent.filmIndex,
-                index
+            putString(
+                RecommendationFeedEvent.filmId,
+                id
             )
         })
     }
@@ -51,7 +51,7 @@ class Adapter(
                     backgroundVideo.player = rvItemState.movieDataItem.trailer
                     rvItemState.movieDataItem.poster?.into(moviePoster)
 
-                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
+                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.id) }
                 }
                 is RVItemState.Loading -> {
                     backgroundVideo.visibility = GONE

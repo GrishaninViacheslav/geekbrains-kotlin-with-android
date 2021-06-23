@@ -96,7 +96,7 @@ class RecommendationFeedFragment : Fragment() {
         when (event.getString(RecommendationFeedEvent.action)) {
             RecommendationFeedEvent.openFilmDetails -> {
                 // TODO: как избежать использование каста?
-                (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
+                (activity as FragmentManager).openFilmDetails(event.getString(RecommendationFeedEvent.filmId, ""))
             }
         }
     }

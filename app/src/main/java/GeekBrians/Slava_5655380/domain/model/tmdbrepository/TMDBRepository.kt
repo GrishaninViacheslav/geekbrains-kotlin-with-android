@@ -3,16 +3,16 @@ package GeekBrians.Slava_5655380.domain.model.tmdbrepository
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
 
-class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
+class TMDBRepository(val listLoader: TMDBListLoader = TMDBListLoader(), val filmDataLoader: TMDBFilmDataLoader = TMDBFilmDataLoader()) : Repository {
     private val MIN_INDEX = 0;
     private val MAX_INDEX = 20000;
 
     private fun toMovieMetadataArray(
-        tmdbDTOsArray: ArrayList<TmdbDTOResult>,
+        tmdbDTOsArray: ArrayList<TmdbMovieDTO>,
         pageFirstEllIndex: Int
     ): ArrayList<MovieMetadata> = ArrayList<MovieMetadata>().apply {
         addAll(Array<MovieMetadata>(tmdbDTOsArray.size) { i ->
-            MovieMetadata(index = pageFirstEllIndex + i).apply {
+            MovieMetadata(id = tmdbDTOsArray[i].id.toString(), index = pageFirstEllIndex + i).apply {
                 originalTitle = tmdbDTOsArray[i].original_title
                 posterUri =
                     if (tmdbDTOsArray[i].poster_path != "") tmdbDTOsArray[i].poster_path else null
@@ -20,6 +20,7 @@ class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
         })
     }
 
+    // TODO: буфферизовать загруженные ранее данные
     override fun getRange(fromIndex: Int, toIndex: Int): List<MovieMetadata> {
         var croppedFromIndex = fromIndex;
         var croppedToIndex = toIndex;
@@ -32,18 +33,22 @@ class TMDBRepository(val loader: TMDBLoader = TMDBLoader()) : Repository {
         if (croppedToIndex > MAX_INDEX) {
             croppedToIndex = MAX_INDEX;
         }
-        val fromPage = loader.findPageIndex(croppedFromIndex)
-        val toPage = loader.findPageIndex(croppedToIndex)
+        val fromPage = listLoader.findPageIndex(croppedFromIndex)
+        val toPage = listLoader.findPageIndex(croppedToIndex)
         // Разделение на TMDBDTO и MovieMetadata так как в дальнеёшем,
         // в MovieMetadata будут поля значения которых нужно будет
         // получать из других баз данных, так как их не найти в TMDBD
-        val tmdbDTOsResults: ArrayList<TmdbDTOResult> = ArrayList()
+        val tmdbDTOsResults: ArrayList<TmdbMovieDTO> = ArrayList()
         for (i in fromPage..toPage) {
-            tmdbDTOsResults.addAll(loader.load(i).results)
+            tmdbDTOsResults.addAll(listLoader.load(i).results)
         }
-        return toMovieMetadataArray(tmdbDTOsResults, (fromPage - 1) * loader.resultLength).subList(
-            croppedFromIndex % loader.resultLength,
-            (croppedToIndex % loader.resultLength) + (toPage - fromPage) * loader.resultLength + 1
+        return toMovieMetadataArray(tmdbDTOsResults, (fromPage - 1) * listLoader.resultLength).subList(
+            croppedFromIndex % listLoader.resultLength,
+            (croppedToIndex % listLoader.resultLength) + (toPage - fromPage) * listLoader.resultLength + 1
         )
+    }
+
+    override fun getMovieData(movieId: String): MovieMetadata {
+        TODO("Not yet implemented")
     }
 }
