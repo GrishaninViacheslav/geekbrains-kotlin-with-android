@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.databinding.ItemBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.Event
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,15 +17,15 @@ class Adapter(
 ) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
-    private fun openFilmDetails(id: String) {
+    private fun openFilmDetails(movieMetadata: MovieMetadata) {
         eventSource.value = Event(Bundle().apply {
             putString(
                 RecommendationFeedEvent.action,
                 RecommendationFeedEvent.openFilmDetails
             )
-            putString(
-                RecommendationFeedEvent.filmId,
-                id
+            putParcelable(
+                RecommendationFeedEvent.movieMetadata,
+                movieMetadata
             )
         })
     }
@@ -47,11 +48,11 @@ class Adapter(
                     progressBar.visibility = GONE
 
                     localizedTitle.text =
-                        rvItemState.movieDataItem.localizedTitle
+                        rvItemState.movieDataItem.metadata.originalTitle
                     backgroundVideo.player = rvItemState.movieDataItem.trailer
                     rvItemState.movieDataItem.poster?.into(moviePoster)
 
-                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.id) }
+                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.metadata) }
                 }
                 is RVItemState.Loading -> {
                     backgroundVideo.visibility = GONE

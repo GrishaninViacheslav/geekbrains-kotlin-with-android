@@ -40,11 +40,11 @@ class RecommendationFeedViewModel(
             }
             cdl.await()
             var fetchFromIndex: Int =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
+                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.metadata.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
             if (!fetchBottom) {
                 val firstItemIndex =
-                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieDataItem.index
+                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieDataItem.metadata.index
                 fetchFromIndex = firstItemIndex - numberOfBufferingItems
                 fetchToIndex = firstItemIndex - 1
             }
@@ -178,7 +178,7 @@ class RecommendationFeedViewModel(
         var msg = "$name[ "
         for (el in arr) {
             msg += when (el) {
-                is RVItemState.Success -> "${el.movieDataItem.index} "
+                is RVItemState.Success -> "${el.movieDataItem.metadata.index} "
                 RVItemState.Loading -> " L "
             }
         }
@@ -190,7 +190,7 @@ class RecommendationFeedViewModel(
         var msg = "$name[ "
         for (el in arr) {
             msg += when (el) {
-                is RVItemState.Success -> "${el.movieDataItem.index} "
+                is RVItemState.Success -> "${el.movieDataItem.metadata.index} "
                 RVItemState.Loading -> " L "
             }
         }

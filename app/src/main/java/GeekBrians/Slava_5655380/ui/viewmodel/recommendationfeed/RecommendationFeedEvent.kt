@@ -4,4 +4,5 @@ object RecommendationFeedEvent{
     val action = "ACTION"
     val openFilmDetails = "OPEN_FILM_DETAILS"
     val filmId = "FILM_ID"
+    val movieMetadata = "MOVIE_METADATA"
 }

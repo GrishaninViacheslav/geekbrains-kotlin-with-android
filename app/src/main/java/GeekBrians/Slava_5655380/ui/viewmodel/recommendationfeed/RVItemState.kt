@@ -16,13 +16,7 @@ sealed class RVItemState {
         }
 
         val movieDataItem: MovieDataItem = MovieDataItem(
-            id = movieMetadata.id,
-            index = movieMetadata.index,
-            localizedTitle = movieMetadata.originalTitle,
-            description = movieMetadata.description,
-            genres = arrayOf("sci-fi", "horror"),
-            director = "Режисёр Режисёрович",
-            screenwriter = "Сценарист Сценаристович",
+            metadata = movieMetadata,
             poster = if (movieMetadata.posterUri != null) Picasso.get().load("$imgBaseUrl${movieMetadata.posterUri}") else null,
             // TODO: сделать что-то вроде пула плееров размер которого был бы равен feedBuffer.size,
             //             чтобы плееры можно было переиспользовать назначая им новый MediaItem,

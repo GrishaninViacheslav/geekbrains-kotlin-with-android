@@ -2,6 +2,7 @@ package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.R
 import GeekBrians.Slava_5655380.databinding.MainActivityBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.view.filmdetails.FilmDetailsFragment
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import android.graphics.Color
@@ -89,14 +90,14 @@ class MainActivity : AppCompatActivity(), FragmentManager {
             .commitNow()
     }
 
-    override fun openFilmDetails(id: String) {
+    override fun openFilmDetails(movieMetadata: MovieMetadata) {
         with(supportFragmentManager.beginTransaction())
         {
             replace(
                 R.id.container,
                 supportFragmentManager.findFragmentByTag(FILM_DETAILS_FRAGMENT_NAME) ?:
                         FilmDetailsFragment.newInstance().apply {
-                    arguments = Bundle().apply { putString(RecommendationFeedEvent.filmId, id) }
+                    arguments = Bundle().apply { putParcelable(RecommendationFeedEvent.movieMetadata, movieMetadata) }
                 }, FILM_DETAILS_FRAGMENT_NAME)
             addToBackStack(null)
             commit()
@@ -106,5 +107,5 @@ class MainActivity : AppCompatActivity(), FragmentManager {
 
 interface FragmentManager {
     fun openRecommendationFeed()
-    fun openFilmDetails(id: String)
+    fun openFilmDetails(movieMetadata: MovieMetadata)
 }
