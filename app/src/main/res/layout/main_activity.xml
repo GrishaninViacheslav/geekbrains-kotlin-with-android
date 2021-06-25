@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -12,10 +13,87 @@
         android:layout_height="0dp"
         android:layout_weight="21" />
 
-    <View
+    <LinearLayout
         android:id="@+id/bottom_menu"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
-        android:background="@color/purple_700" />
+        android:background="@color/purple_700"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_recommendation"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Рекомендации"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/button_bar_button_text_size"
+            app:icon="@drawable/baseline_explore_24"
+            app:iconPadding="4dp"
+            app:iconGravity="textTop"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_collections"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Сборники"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/button_bar_button_text_size"
+            app:icon="@drawable/sharp_subscriptions_24"
+            app:iconPadding="4dp"
+            app:iconGravity="textTop"
+            app:iconTint="@color/white"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_search"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Поиск"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/button_bar_button_text_size"
+            app:icon="@drawable/baseline_search_24"
+            app:iconPadding="4dp"
+            app:iconGravity="textTop"
+            app:iconTint="@color/white"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_library"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Библиотека"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/button_bar_button_text_size"
+            app:icon="@drawable/sharp_video_library_24"
+            app:iconPadding="4dp"
+            app:iconGravity="textTop"
+            app:iconTint="@color/white"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_settings"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="Настройки"
+            android:padding="0dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/button_bar_button_text_size"
+            app:icon="@drawable/sharp_settings_24"
+            app:iconPadding="4dp"
+            app:iconGravity="textTop"
+            app:iconTint="@color/white"/>
+    </LinearLayout>
 </LinearLayout>
