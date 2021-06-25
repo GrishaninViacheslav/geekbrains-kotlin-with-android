@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.domain.model.tmdbrepository
+package GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb
 
 data class TmdbMovieListDTO(val results: Array<TmdbMovieDTO> = Array<TmdbMovieDTO>(0) { TmdbMovieDTO() })
 

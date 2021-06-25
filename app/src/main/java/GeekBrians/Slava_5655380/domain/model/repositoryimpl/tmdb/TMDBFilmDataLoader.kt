@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.domain.model.tmdbrepository
+package GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb
 
 import GeekBrians.Slava_5655380.BuildConfig
 import com.google.gson.GsonBuilder

@@ -1,4 +1,4 @@
-package GeekBrians.Slava_5655380.domain.model.tmdbrepository
+package GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb
 
 import retrofit2.Call
 import retrofit2.http.GET

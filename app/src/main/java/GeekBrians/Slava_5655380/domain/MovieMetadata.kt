@@ -6,7 +6,7 @@ import android.os.Parcelable
 class MovieMetadata(
     val id: String,
     var index: Int,
-    var localizedTitle: String? = null,
+    var userScore: Int? = null,
     var originalTitle: String? = null,
     var description: String? = null,
     var posterUri: String? = null
@@ -14,16 +14,17 @@ class MovieMetadata(
     constructor(parcel: Parcel) : this(
         parcel.readString()!!,
         parcel.readInt(),
-        parcel.readString(),
+        parcel.readValue(Int::class.java.classLoader) as? Int,
         parcel.readString(),
         parcel.readString(),
         parcel.readString()
-    )
+    ) {
+    }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
         parcel.writeInt(index)
-        parcel.writeString(localizedTitle)
+        parcel.writeValue(userScore)
         parcel.writeString(originalTitle)
         parcel.writeString(description)
         parcel.writeString(posterUri)

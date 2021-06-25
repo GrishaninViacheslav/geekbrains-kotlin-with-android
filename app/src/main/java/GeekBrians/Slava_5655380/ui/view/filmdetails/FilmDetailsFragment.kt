@@ -1,7 +1,9 @@
 package GeekBrians.Slava_5655380.ui.view.filmdetails
 
+import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.databinding.FilmDetailsFragmentBinding
 import GeekBrians.Slava_5655380.domain.MovieMetadata
+import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataEntity
 import GeekBrians.Slava_5655380.ui.viewmodel.filmdetails.FilmDetailsViewModel
 import GeekBrians.Slava_5655380.ui.viewmodel.filmdetails.FilmDetailsViewModelFactory
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
@@ -11,6 +13,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import java.lang.Exception
 
@@ -38,9 +41,19 @@ class FilmDetailsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FilmDetailsFragmentBinding.inflate(inflater, container, false)
-        binding.localizedTitle.text = "${arguments?.getParcelable<MovieMetadata>(RecommendationFeedEvent.movieMetadata)?.id}"
+        binding.localizedTitle.text = "${viewModel.movieMetadata.id}"
+        binding.userScore.text =
+            "Ваша оценка: ${viewModel.movieMetadata.userScore ?: "отсутствует"}"
         binding.buttonScore.setOnClickListener {
-            val dlgBuilder: DialogFragment = RateDialogFragment()
+            val dlgBuilder = RateDialogFragment(viewModel.movieMetadata.id)
+            dlgBuilder.resultEvent.observe(viewLifecycleOwner) {
+                val userScope = it.getContentIfNotHandled()?.getInt(dlgBuilder.RESULT_EVENT_VALUE_KEY)!!
+                Thread{
+                    App.instance.getMovieUserDataDao().insert(MovieUserDataEntity(viewModel.movieMetadata.id, userScope))
+                }.start()
+                viewModel.movieMetadata.userScore = userScope
+                binding.userScore.text = "Ваша оценка: ${viewModel.movieMetadata.userScore}"
+            }
             fragmentManager?.let { it1 -> dlgBuilder.show(it1, "transactionTag") }
         }
         return binding.root
