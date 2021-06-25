@@ -55,17 +55,11 @@ class App : Application() {
         _instance = this
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             val FBM_TAG = "[FBM]"
-
             if (!task.isSuccessful) {
                 Log.w(FBM_TAG, "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
-
-            // Get new FCM registration token
-            val token =
-
-            // Log and toast
-            Log.d(FBM_TAG, "FCM registration token: ${task.result?:"null"}")
+            Log.d(FBM_TAG, "FCM token: ${task.result?:"null"}")
         })
         Thread {
             db = Room.databaseBuilder(
