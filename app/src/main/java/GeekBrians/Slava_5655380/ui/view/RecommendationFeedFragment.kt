@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
@@ -96,7 +97,7 @@ class RecommendationFeedFragment : Fragment() {
         when (event.getString(RecommendationFeedEvent.action)) {
             RecommendationFeedEvent.openFilmDetails -> {
                 // TODO: как избежать использование каста?
-                (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
+                (activity as FragmentManager).openFilmDetails(event.getParcelable<MovieMetadata>(RecommendationFeedEvent.movieMetadata)!!)
             }
         }
     }

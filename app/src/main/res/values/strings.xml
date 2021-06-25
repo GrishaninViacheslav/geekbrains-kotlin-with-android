@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">geekbrains-kotlin-with-android</string>
     <string name="error_font">sans-serif-medium</string>
+    <string name="rate_dialog_fragment_title">Оцените фильм</string>
+    <string name="confirm_score">оценить</string>
+    <string name="cancel">отмена</string>
 </resources>
