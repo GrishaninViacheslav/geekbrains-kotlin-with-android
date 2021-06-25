@@ -1,14 +1,11 @@
 package GeekBrians.Slava_5655380.ui.view.filmdetails
 
-import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.R
 import GeekBrians.Slava_5655380.databinding.RateDialogFragmentBinding
-import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataEntity
 import GeekBrians.Slava_5655380.ui.Event
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.fragment.app.DialogFragment

@@ -3,7 +3,10 @@ package GeekBrians.Slava_5655380
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataDAO
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataDB
 import android.app.Application
+import android.util.Log
 import androidx.room.Room
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.messaging.FirebaseMessaging
 import java.lang.Exception
 
 class App : Application() {
@@ -50,6 +53,20 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         _instance = this
+        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
+            val FBM_TAG = "[FBM]"
+
+            if (!task.isSuccessful) {
+                Log.w(FBM_TAG, "Fetching FCM registration token failed", task.exception)
+                return@OnCompleteListener
+            }
+
+            // Get new FCM registration token
+            val token =
+
+            // Log and toast
+            Log.d(FBM_TAG, "FCM registration token: ${task.result?:"null"}")
+        })
         Thread {
             db = Room.databaseBuilder(
                 instance.applicationContext,
