@@ -1,10 +1,9 @@
-package GeekBrians.Slava_5655380.domain.model.repositoryimpl
+package GeekBrains.Slava_5655380.domain.model.repositoryimpl
 
 import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataDAO
-import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TMDBFilmDataLoader
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TMDBListLoader
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TmdbMovieDTO
 

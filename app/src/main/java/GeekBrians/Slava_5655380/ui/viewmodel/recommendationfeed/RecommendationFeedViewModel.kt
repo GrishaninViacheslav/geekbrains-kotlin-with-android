@@ -2,7 +2,7 @@ package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
-import GeekBrians.Slava_5655380.domain.model.repositoryimpl.RepositoryImpl
+import GeekBrains.Slava_5655380.domain.model.repositoryimpl.RepositoryImpl
 import android.os.Handler
 import android.os.Looper
 import android.util.Log

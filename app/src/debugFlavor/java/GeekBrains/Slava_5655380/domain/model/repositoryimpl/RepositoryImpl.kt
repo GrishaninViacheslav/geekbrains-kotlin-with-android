@@ -1,9 +1,10 @@
-package GeekBrians.Slava_5655380.domain.model
+package GeekBrains.Slava_5655380.domain.model.repositoryimpl
 
 import GeekBrians.Slava_5655380.domain.MovieMetadata
+import GeekBrians.Slava_5655380.domain.model.Repository
 import kotlin.random.Random
 
-class DebugRepository : Repository {
+class RepositoryImpl : Repository {
     private val data = listOf(
         MovieMetadata(
             "0",
