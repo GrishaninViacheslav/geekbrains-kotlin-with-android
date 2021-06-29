@@ -12,7 +12,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 
 class Adapter(
-    private val viewModel: RecommendationFeedViewModel,
+    private val dataSource: ArrayList<RVItemState>,
     private val eventSource: MutableLiveData<Event> = MutableLiveData()
 ) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
@@ -40,7 +40,7 @@ class Adapter(
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
         with(viewHolder.binding) {
-            when (val rvItemState = viewModel.getItem(i)) {
+            when (val rvItemState = dataSource[i]) {
                 is RVItemState.Success -> {
                     backgroundVideo.visibility = VISIBLE
                     moviePoster.visibility = VISIBLE
@@ -64,7 +64,7 @@ class Adapter(
         }
     }
 
-    override fun getItemCount() = viewModel.getItemCount()
+    override fun getItemCount() = dataSource.size
 
     fun getEventSource() = eventSource
 

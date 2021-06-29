@@ -35,7 +35,7 @@ class RecommendationFeedFragment : Fragment() {
             scrollState = newState
             if (newState == SCROLL_STATE_IDLE) {
                 with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
-                    if (lastDy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                    if (lastDy > 0 && findLastVisibleItemPosition() > viewModel.feedBuffer.size - feedNecessityThreshold) {
                         viewModel.feed(true)
                     }
                     if (lastDy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {
@@ -55,7 +55,7 @@ class RecommendationFeedFragment : Fragment() {
             }
             if (scrollState == SCROLL_STATE_DRAGGING) {
                 with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
-                    if (dy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                    if (dy > 0 && findLastVisibleItemPosition() > viewModel.feedBuffer.size - feedNecessityThreshold) {
                         viewModel.feed(true)
                     }
                     if (dy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {

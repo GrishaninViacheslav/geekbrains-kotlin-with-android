@@ -16,12 +16,14 @@ import kotlin.collections.ArrayList
 // TODO: проконтролировать чтобы numberOfBufferingItems, feedBufferMaxSize были
 //              в пределах допустимых значений(например numberOfBufferingItems должно быть > 0,
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
+// TODO: проконтролировать чтобы значения feedBuffer нельзя было изменить
+//              за пределами RecommendationFeedViewModel
 class RecommendationFeedViewModel(
+    val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val feedInitialPosition: Int = 0,
     private val repository: Repository = RepositoryImpl(),
     private val numberOfBufferingItems: Int = 2,
     private val feedBufferMaxSize: Int = 12 - numberOfBufferingItems,
-    private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper()),
     private val feedState: MutableLiveData<AppState> = MutableLiveData()
 ) : ViewModel() {
@@ -202,7 +204,7 @@ class RecommendationFeedViewModel(
     }
 
 
-    var adapter: Adapter = Adapter(this)
+    var adapter: Adapter = Adapter(feedBuffer)
 
     fun feed(feedBottom: Boolean) {
         if (feedBottom && bottomIsFetching || !feedBottom && topIsFetching) {
@@ -222,10 +224,6 @@ class RecommendationFeedViewModel(
             fetchData(feedBottom)
         }
     }
-
-    fun getItemCount() = feedBuffer.size
-
-    fun getItem(index: Int) = feedBuffer[index]
 
     fun getFeedState() = feedState
 }
