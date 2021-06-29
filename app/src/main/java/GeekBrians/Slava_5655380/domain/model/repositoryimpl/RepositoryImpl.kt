@@ -4,13 +4,14 @@ import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.room.MovieUserDataDAO
-import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TMDBFilmDataLoader
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TMDBListLoader
 import GeekBrians.Slava_5655380.domain.model.repositoryimpl.tmdb.TmdbMovieDTO
 
 class RepositoryImpl(val listLoader: TMDBListLoader = TMDBListLoader(), val movieUserDataDAO: MovieUserDataDAO = App.instance.getMovieUserDataDao()) : Repository {
     private val MIN_INDEX = 0;
     private val MAX_INDEX = 20000;
+
+    private var genreFilter: Int? = null
 
     private fun toMovieMetadataArray(
         tmdbDTOsArray: ArrayList<TmdbMovieDTO>,
@@ -23,6 +24,10 @@ class RepositoryImpl(val listLoader: TMDBListLoader = TMDBListLoader(), val movi
                     if (tmdbDTOsArray[i].poster_path != "") tmdbDTOsArray[i].poster_path else null
             }
         })
+    }
+
+    override fun setGenreFilter(genreId: Int?) {
+        this.genreFilter = genreId
     }
 
     // TODO: буфферизовать загруженные ранее данные
@@ -43,7 +48,7 @@ class RepositoryImpl(val listLoader: TMDBListLoader = TMDBListLoader(), val movi
             val toPage = listLoader.findPageIndex(croppedToIndex)
             val tmdbDTOsResults: ArrayList<TmdbMovieDTO> = ArrayList()
             for (i in fromPage..toPage) {
-                tmdbDTOsResults.addAll(listLoader.load(i).results)
+                tmdbDTOsResults.addAll(listLoader.load(i, genreFilter).results)
             }
             return toMovieMetadataArray(tmdbDTOsResults, (fromPage - 1) * listLoader.resultLength).subList(
                 croppedFromIndex % listLoader.resultLength,

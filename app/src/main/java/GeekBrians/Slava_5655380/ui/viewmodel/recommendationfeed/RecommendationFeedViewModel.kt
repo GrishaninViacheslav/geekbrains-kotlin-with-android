@@ -229,13 +229,15 @@ class RecommendationFeedViewModel(
 
     fun getFeedState() = feedState
 
-    fun setGenreFilter(genreId: Int){
+    fun setGenreFilter(genreId: Int?){
         uiThreadHandler.post {
-            // TODO: прервать поток запущенные пршлым feed https://docs.oracle.com/javase/tutorial/essential/concurrency/interrupt.html
+            // TODO: Если AppState == Loading, то прервать
+            //             поток запущенные пршлым feed https://docs.oracle.com/javase/tutorial/essential/concurrency/interrupt.html
             val numberOfRemovedItems = feedBuffer.size
             feedBuffer.clear()
             adapter.notifyItemRangeRemoved(0, numberOfRemovedItems)
             feed(true)
+            repository.setGenreFilter(genreId)
         }
     }
 }

@@ -105,6 +105,10 @@ class DebugRepository : Repository {
     private val fetchingDelay = 1000L
     private val isThrowingErrors = false
 
+    override fun setGenreFilter(genreId: Int?) {
+        TODO("Not yet implemented")
+    }
+
     override fun getRange(fromIndex: Int, toIndex: Int): List<MovieMetadata> {
         Thread.sleep(fetchingDelay)
 

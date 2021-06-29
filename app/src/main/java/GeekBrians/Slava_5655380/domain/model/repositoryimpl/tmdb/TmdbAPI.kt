@@ -14,6 +14,7 @@ interface TmdbAPI {
         @Query("include_adult") adult: Boolean,
     ): Call<TmdbMovieListDTO>
 
+    @GET("3/discover/movie")
     fun getRecommendationsListWithGenre(
         @Query("api_key") token: String,
         @Query("page") lat: Int,

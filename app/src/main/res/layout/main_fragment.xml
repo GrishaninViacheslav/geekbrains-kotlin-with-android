@@ -25,7 +25,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ВСЕ"
+                android:text="@string/genre_filter_all"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="БОЕВИКИ"
+                android:text="@string/genre_filter_action"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ПРИКЛЮЧЕНЧЕСКИЕ"
+                android:text="@string/genre_filter_adventure"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="АНИМАЦИЯ"
+                android:text="@string/genre_filter_animation"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="КОМЕДИИ"
+                android:text="@string/genre_filter_comedy"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="КРИМИНАЛЬНЫЕ"
+                android:text="@string/genre_filter_crime"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -79,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ДОКУМЕНТАЛЬНЫЕ"
+                android:text="@string/genre_filter_documentary"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ДРАМАТИЧЕСКИЕ"
+                android:text="@string/genre_filter_drama"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -97,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="СЕМЕЙНЫЕ"
+                android:text="@string/genre_filter_family"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -106,7 +106,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ФЭНТАЗИ"
+                android:text="@string/genre_filter_fantasy"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ИСТОРИЧЕСКИЕ"
+                android:text="@string/genre_filter_history"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -124,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ХОРРОРЫ"
+                android:text="@string/genre_filter_horror"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -133,7 +133,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="МИСТИКА"
+                android:text="@string/genre_filter_mystic"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -142,7 +142,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="РОМАНТИЧЕСКИЕ"
+                android:text="@string/genre_filter_romantic"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -151,7 +151,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ФАНТАСТИЧЕСКИЕ"
+                android:text="@string/genre_filter_scifi"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -160,7 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ТРИЛЛЕРЫ"
+                android:text="@string/genre_filter_thriller"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
 
@@ -169,16 +169,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginHorizontal="15dp"
-                android:text="ВОЕННЫЕ"
-                android:textColor="@color/white"
-                android:textSize="@dimen/text_size" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginHorizontal="15dp"
-                android:text="ВОЕННЫЕ"
+                android:text="@string/genre_filter_war"
                 android:textColor="@color/white"
                 android:textSize="@dimen/text_size" />
         </LinearLayout>

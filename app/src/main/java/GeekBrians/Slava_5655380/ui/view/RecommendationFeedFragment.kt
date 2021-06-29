@@ -150,7 +150,8 @@ class RecommendationFeedFragment : Fragment() {
             for(genreOptionView in filmGenresFilter.children){
                 genreOptionView.setOnClickListener{
                     Log.d("[GENRE]", "genre option")
-                    viewModel.setGenreFilter(404)
+                    val genreId = genresMap.get((genreOptionView as TextView).text)
+                    viewModel.setGenreFilter(genreId)
                 }
             }
         }
