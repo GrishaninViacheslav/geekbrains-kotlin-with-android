@@ -6,6 +6,9 @@ plugins {
 apply plugin: 'kotlin-kapt'
 apply plugin: 'com.google.gms.google-services'
 
+Properties properties = new Properties()
+properties.load(project.rootProject.file("apikey.properties").newDataInputStream())
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -20,24 +23,22 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildTypes.each {
+        def apiKey  = properties.getProperty("TMDB_API_KEY", "")
+        it.buildConfigField "String", "TMDB_API_KEY", apiKey
+    }
+
     signingConfigs {
         release {
             storeFile file("keystore.jks")
-            storePassword 'gbkotlin'
+            storePassword properties['GEEKBRAINS_STORE_PASSSWORD']
             keyAlias 'GeekBrains'
-            keyPassword 'gbkotlin'
+            keyPassword properties['GEEKBRAINS_STORE_PASSSWORD']
         }
     }
 
     buildFeatures {
         viewBinding true
-    }
-
-    buildTypes.each {
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file("apikey.properties").newDataInputStream())
-        def apiKey  = properties.getProperty("TMDB_API_KEY", "")
-        it.buildConfigField "String", "TMDB_API_KEY", apiKey
     }
 
     buildTypes {
