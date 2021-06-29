@@ -7,11 +7,18 @@ import retrofit2.http.Query
 
 
 interface TmdbAPI {
-    @GET("3/trending/movie/week")
+    @GET("3/discover/movie")
     fun getRecommendationsList(
         @Query("api_key") token: String,
         @Query("page") lat: Int,
-        @Query("include_adult") adult: Boolean
+        @Query("include_adult") adult: Boolean,
+    ): Call<TmdbMovieListDTO>
+
+    fun getRecommendationsListWithGenre(
+        @Query("api_key") token: String,
+        @Query("page") lat: Int,
+        @Query("include_adult") adult: Boolean,
+        @Query("with_genres") genreId: Int
     ): Call<TmdbMovieListDTO>
 
     @GET("3/movie/{movie_id}")

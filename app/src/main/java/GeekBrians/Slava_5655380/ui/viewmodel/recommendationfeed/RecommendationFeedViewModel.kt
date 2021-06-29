@@ -228,4 +228,14 @@ class RecommendationFeedViewModel(
     fun getItem(index: Int) = feedBuffer[index]
 
     fun getFeedState() = feedState
+
+    fun setGenreFilter(genreId: Int){
+        uiThreadHandler.post {
+            // TODO: прервать поток запущенные пршлым feed https://docs.oracle.com/javase/tutorial/essential/concurrency/interrupt.html
+            val numberOfRemovedItems = feedBuffer.size
+            feedBuffer.clear()
+            adapter.notifyItemRangeRemoved(0, numberOfRemovedItems)
+            feed(true)
+        }
+    }
 }
