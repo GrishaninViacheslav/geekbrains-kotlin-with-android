@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
@@ -34,7 +35,7 @@ class RecommendationFeedFragment : Fragment() {
             scrollState = newState
             if (newState == SCROLL_STATE_IDLE) {
                 with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
-                    if (lastDy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                    if (lastDy > 0 && findLastVisibleItemPosition() > viewModel.feedBuffer.size - feedNecessityThreshold) {
                         viewModel.feed(true)
                     }
                     if (lastDy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {
@@ -54,7 +55,7 @@ class RecommendationFeedFragment : Fragment() {
             }
             if (scrollState == SCROLL_STATE_DRAGGING) {
                 with(binding.recyclerViewLines.layoutManager as LinearLayoutManager) {
-                    if (dy > 0 && findLastVisibleItemPosition() > viewModel.getItemCount() - feedNecessityThreshold) {
+                    if (dy > 0 && findLastVisibleItemPosition() > viewModel.feedBuffer.size - feedNecessityThreshold) {
                         viewModel.feed(true)
                     }
                     if (dy < 0 && findFirstVisibleItemPosition() < feedNecessityThreshold) {
@@ -96,7 +97,7 @@ class RecommendationFeedFragment : Fragment() {
         when (event.getString(RecommendationFeedEvent.action)) {
             RecommendationFeedEvent.openFilmDetails -> {
                 // TODO: как избежать использование каста?
-                (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
+                (activity as FragmentManager).openFilmDetails(event.getParcelable<MovieMetadata>(RecommendationFeedEvent.movieMetadata)!!)
             }
         }
     }

@@ -3,6 +3,12 @@ plugins {
     id 'kotlin-android'
 }
 
+apply plugin: 'kotlin-kapt'
+apply plugin: 'com.google.gms.google-services'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file("apikey.properties").newDataInputStream())
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -17,21 +23,48 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildFeatures {
-        viewBinding true
-    }
-
     buildTypes.each {
-        Properties properties = new Properties()
-        properties.load(project.rootProject.file("apikey.properties").newDataInputStream())
         def apiKey  = properties.getProperty("TMDB_API_KEY", "")
         it.buildConfigField "String", "TMDB_API_KEY", apiKey
     }
 
+    signingConfigs {
+        release {
+            storeFile file("keystore.jks")
+            storePassword properties['GEEKBRAINS_STORE_PASSSWORD']
+            keyAlias 'GeekBrains'
+            keyPassword properties['GEEKBRAINS_STORE_PASSSWORD']
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "TYPE", '"RELEASE"'
+        }
+
+        debug {
+            versionNameSuffix "-debug"
+            buildConfigField "String", "TYPE", '"DEBUG"'
+        }
+    }
+
+    flavorDimensions 'version'
+
+    productFlavors {
+        releaseFlavor {
+            dimension 'version'
+            versionNameSuffix '.release'
+        }
+        debugFlavor {
+            dimension 'version'
+            versionNameSuffix '.debug'
         }
     }
 
@@ -62,6 +95,11 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'androidx.room:room-runtime:2.2.5'
+    implementation platform('com.google.firebase:firebase-bom:28.1.0')
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    kapt 'androidx.room:room-compiler:2.2.5'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

@@ -1,6 +1,7 @@
 package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
 import GeekBrians.Slava_5655380.databinding.ItemBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.Event
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -11,20 +12,20 @@ import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.RecyclerView
 
 class Adapter(
-    private val viewModel: RecommendationFeedViewModel,
+    private val dataSource: ArrayList<RVItemState>,
     private val eventSource: MutableLiveData<Event> = MutableLiveData()
 ) :
     RecyclerView.Adapter<Adapter.ViewHolder>() {
 
-    private fun openFilmDetails(index: Int) {
+    private fun openFilmDetails(movieMetadata: MovieMetadata) {
         eventSource.value = Event(Bundle().apply {
             putString(
                 RecommendationFeedEvent.action,
                 RecommendationFeedEvent.openFilmDetails
             )
-            putInt(
-                RecommendationFeedEvent.filmIndex,
-                index
+            putParcelable(
+                RecommendationFeedEvent.movieMetadata,
+                movieMetadata
             )
         })
     }
@@ -39,7 +40,7 @@ class Adapter(
 
     override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
         with(viewHolder.binding) {
-            when (val rvItemState = viewModel.getItem(i)) {
+            when (val rvItemState = dataSource[i]) {
                 is RVItemState.Success -> {
                     backgroundVideo.visibility = VISIBLE
                     moviePoster.visibility = VISIBLE
@@ -47,11 +48,11 @@ class Adapter(
                     progressBar.visibility = GONE
 
                     localizedTitle.text =
-                        rvItemState.movieDataItem.localizedTitle
+                        rvItemState.movieDataItem.metadata.originalTitle
                     backgroundVideo.player = rvItemState.movieDataItem.trailer
                     rvItemState.movieDataItem.poster?.into(moviePoster)
 
-                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.index) }
+                    moviePoster.setOnClickListener { openFilmDetails(rvItemState.movieDataItem.metadata) }
                 }
                 is RVItemState.Loading -> {
                     backgroundVideo.visibility = GONE
@@ -63,7 +64,7 @@ class Adapter(
         }
     }
 
-    override fun getItemCount() = viewModel.getItemCount()
+    override fun getItemCount() = dataSource.size
 
     fun getEventSource() = eventSource
 
