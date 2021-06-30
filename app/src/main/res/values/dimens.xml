@@ -7,4 +7,5 @@
     <dimen name="localized_title_text_size">30sp</dimen>
     <dimen name="button_bar_button_text_size">7sp</dimen>
     <dimen name="text_size">15sp</dimen>
+    <dimen name="text_small_size">10sp</dimen>
 </resources>
