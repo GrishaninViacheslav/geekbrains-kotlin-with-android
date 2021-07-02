@@ -1,5 +1,6 @@
 package GeekBrians.Slava_5655380.ui.view
 
+import GeekBrians.Slava_5655380.App
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
@@ -87,6 +88,9 @@ class RecommendationFeedFragment : Fragment() {
                 binding.errorTextView.visibility = GONE
             }
             is AppState.Error -> {
+                if(binding.errorTextView.visibility == VISIBLE){
+                    return
+                }
                 binding.errorTextView.visibility = VISIBLE
                 binding.errorTextView.text = feedState.error.message
             }
@@ -118,6 +122,15 @@ class RecommendationFeedFragment : Fragment() {
                     }
             }
             recyclerViewLines.addOnScrollListener(FeedScrollListener())
+        }
+        App.instance.networkConnectivity.observe(viewLifecycleOwner){
+            if(it){
+                binding.errorTextView.visibility = GONE
+            }
+            else{
+                binding.errorTextView.visibility = VISIBLE
+                binding.errorTextView.text = "Нет подключения"
+            }
         }
         return binding.root
     }
