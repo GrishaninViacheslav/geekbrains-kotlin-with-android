@@ -1,4 +1,24 @@
 <resources>
     <string name="app_name">geekbrains-kotlin-with-android</string>
     <string name="error_font">sans-serif-medium</string>
+    <string name="rate_dialog_fragment_title">Оцените фильм</string>
+    <string name="confirm_score">оценить</string>
+    <string name="cancel">отмена</string>
+    <string name="genre_filter_all">ВСЕ</string>
+    <string name="genre_filter_action">БОЕВИКИ</string>
+    <string name="genre_filter_adventure">ПРИКЛЮЧЕНЧЕСКИЕ</string>
+    <string name="genre_filter_animation">АНИМАЦИЯ</string>
+    <string name="genre_filter_comedy">КОМЕДИИ</string>
+    <string name="genre_filter_crime">КРИМИНАЛЬНЫЕ</string>
+    <string name="genre_filter_documentary">ДОКУМЕНТАЛЬНЫЕ</string>
+    <string name="genre_filter_drama">ДРАМАТИЧЕСКИЕ</string>
+    <string name="genre_filter_family">СЕМЕЙНЫЕ</string>
+    <string name="genre_filter_fantasy">ФЭНТАЗИ</string>
+    <string name="genre_filter_history">ИСТОРИЧЕСКИЕ</string>
+    <string name="genre_filter_horror">ХОРРОРЫ</string>
+    <string name="genre_filter_mystic">МИСТИКА</string>
+    <string name="genre_filter_romantic">РОМАНТИЧЕСКИЕ</string>
+    <string name="genre_filter_scifi">ФАНТАСТИЧЕСКИЕ</string>
+    <string name="genre_filter_thriller">ТРИЛЛЕРЫ</string>
+    <string name="genre_filter_war">ВОЕННЫЕ</string>
 </resources>

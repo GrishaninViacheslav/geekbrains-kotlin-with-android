@@ -1,20 +1,26 @@
 package GeekBrians.Slava_5655380.ui.view
 
 import GeekBrians.Slava_5655380.databinding.MainFragmentBinding
+import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.AppState
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedEvent
 import GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed.RecommendationFeedViewModel
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.*
+
 
 class RecommendationFeedFragment : Fragment() {
     // TODO: как сделать object из FeedScrollListener?
@@ -96,7 +102,11 @@ class RecommendationFeedFragment : Fragment() {
         when (event.getString(RecommendationFeedEvent.action)) {
             RecommendationFeedEvent.openFilmDetails -> {
                 // TODO: как избежать использование каста?
-                (activity as FragmentManager).openFilmDetails(event.getInt(RecommendationFeedEvent.filmIndex))
+                (activity as FragmentManager).openFilmDetails(
+                    event.getParcelable<MovieMetadata>(
+                        RecommendationFeedEvent.movieMetadata
+                    )!!
+                )
             }
         }
     }
@@ -117,6 +127,33 @@ class RecommendationFeedFragment : Fragment() {
                     }
             }
             recyclerViewLines.addOnScrollListener(FeedScrollListener())
+            // TODO: вынест массив в ресурсы
+            val genresMap = mapOf(
+                Pair("БОЕВИКИ", 28),
+                Pair("ПРИКЛЮЧЕНЧЕСКИЕ", 12),
+                Pair("АНИМАЦИОННЫЕ", 16),
+                Pair("КОМЕДИИ", 35),
+                Pair("КРИМИНАЛЬНЫЕ", 80),
+                Pair("ДОКУМЕНТАЛЬНЫЕ", 99),
+                Pair("ДРАМАТИЧЕСКИЕ", 18),
+                Pair("СЕМЕЙНЫЕ", 10751),
+                Pair("ФЭНТАЗИ", 14),
+                Pair("ИСТОРИЧЕСКИЕ", 36),
+                Pair("ХОРРОРЫ", 27),
+                Pair("МИСТИЧЕСКИЕ", 9648),
+                Pair("РОМАНТИЧЕСКИЕ", 10749),
+                Pair("ФАНТАСТИЧЕСКИЕ", 878),
+                Pair("ТРИЛЛЕРЫ", 53),
+                Pair("ВОЕННЫЕ", 10752),
+                Pair("ВЕСТЕРНЫ", 37)
+            )
+            for(genreOptionView in filmGenresFilter.children){
+                genreOptionView.setOnClickListener{
+                    Log.d("[GENRE]", "genre option")
+                    val genreId = genresMap.get((genreOptionView as TextView).text)
+                    viewModel.setGenreFilter(genreId)
+                }
+            }
         }
         return binding.root
     }

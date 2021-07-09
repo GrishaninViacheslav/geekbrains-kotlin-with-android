@@ -1,9 +1,8 @@
 package GeekBrians.Slava_5655380.ui.viewmodel.recommendationfeed
 
-import GeekBrians.Slava_5655380.domain.model.DebugRepository
 import GeekBrians.Slava_5655380.domain.MovieMetadata
 import GeekBrians.Slava_5655380.domain.model.Repository
-import GeekBrians.Slava_5655380.domain.model.tmdbrepository.TMDBRepository
+import GeekBrians.Slava_5655380.domain.model.repositoryimpl.RepositoryImpl
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -19,7 +18,7 @@ import kotlin.collections.ArrayList
 //              от feedBufferMaxSize отнимается numberOfBufferingItems)
 class RecommendationFeedViewModel(
     private val feedInitialPosition: Int = 0,
-    private val repository: Repository = TMDBRepository(),
+    private val repository: Repository = RepositoryImpl(),
     private val numberOfBufferingItems: Int = 2,
     private val feedBufferMaxSize: Int = 12 - numberOfBufferingItems,
     private val feedBuffer: ArrayList<RVItemState> = arrayListOf(),
@@ -40,11 +39,11 @@ class RecommendationFeedViewModel(
             }
             cdl.await()
             var fetchFromIndex: Int =
-                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.index + 1
+                if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[feedBuffer.size - 2] as RVItemState.Success).movieDataItem.metadata.index + 1
             var fetchToIndex: Int = fetchFromIndex + numberOfBufferingItems - 1
             if (!fetchBottom) {
                 val firstItemIndex =
-                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieDataItem.index
+                    if (feedBuffer.size == 1) feedInitialPosition else (feedBuffer[1] as RVItemState.Success).movieDataItem.metadata.index
                 fetchFromIndex = firstItemIndex - numberOfBufferingItems
                 fetchToIndex = firstItemIndex - 1
             }
@@ -178,7 +177,7 @@ class RecommendationFeedViewModel(
         var msg = "$name[ "
         for (el in arr) {
             msg += when (el) {
-                is RVItemState.Success -> "${el.movieDataItem.index} "
+                is RVItemState.Success -> "${el.movieDataItem.metadata.index} "
                 RVItemState.Loading -> " L "
             }
         }
@@ -190,7 +189,7 @@ class RecommendationFeedViewModel(
         var msg = "$name[ "
         for (el in arr) {
             msg += when (el) {
-                is RVItemState.Success -> "${el.movieDataItem.index} "
+                is RVItemState.Success -> "${el.movieDataItem.metadata.index} "
                 RVItemState.Loading -> " L "
             }
         }
@@ -229,4 +228,18 @@ class RecommendationFeedViewModel(
     fun getItem(index: Int) = feedBuffer[index]
 
     fun getFeedState() = feedState
+
+    fun setGenreFilter(genreId: Int?){
+        fetchingExecutorService.execute{
+            uiThreadHandler.post {
+                // TODO: Если AppState == Loading, то прервать
+                //             поток запущенные пршлым feed https://docs.oracle.com/javase/tutorial/essential/concurrency/interrupt.html
+                val numberOfRemovedItems = feedBuffer.size
+                feedBuffer.clear()
+                adapter.notifyItemRangeRemoved(0, numberOfRemovedItems)
+                feed(true)
+                repository.setGenreFilter(genreId)
+            }
+        }
+    }
 }
