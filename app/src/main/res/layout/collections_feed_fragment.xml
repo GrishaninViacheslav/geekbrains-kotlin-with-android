@@ -6,9 +6,11 @@
     tools:context=".ui.view.CollectionsFeedFragment">
 
     <TextView
+        android:id="@+id/data"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Collections feed fragment" />
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_margin="10dp"
+        android:text="Loading" />
 
 </FrameLayout>
